@@ -3,12 +3,17 @@
 scripts/run_report.py — 一键运行全部测试并生成报告
 
 用法：
-    python scripts/run_report.py                        # 控制台 + HTML（规则 Agent）
-    python scripts/run_report.py --agent llm             # 使用 LLMAgent
-    python scripts/run_report.py --agent llm --repeat 3  # LLMAgent 稳定性评测（重复3次）
-    python scripts/run_report.py --html-only             # 仅 HTML
-    python scripts/run_report.py --console               # 仅控制台
-    python scripts/run_report.py --junit                 # JUnit XML（通过 pytest）
+    python scripts/run_report.py                               # 控制台 + HTML（规则 Agent）
+    python scripts/run_report.py --agent llm                    # 使用 LLMAgent
+    python scripts/run_report.py --agent llm --repeat 3        # LLMAgent 稳定性评测（重复3次）
+    python scripts/run_report.py --ids FUNC-001,FUNC-002       # 只跑指定用例
+    python scripts/run_report.py --agent llm --ids FUNC-001 --repeat 3
+    python scripts/run_report.py --html-only                   # 仅 HTML
+    python scripts/run_report.py --console                     # 仅控制台
+    python scripts/run_report.py --junit                       # JUnit XML（通过 pytest）
+
+v1.0 真实模型评测命令：
+    python scripts/run_report.py --agent llm --repeat 3 --ids FUNC-001,FUNC-002,FUNC-003,FUNC-004,FUNC-011,FUNC-017,BOUND-001,BOUND-002,BOUND-010,SEC-001,SEC-002,SEC-006,ERROR-001,ERROR-003
 """
 import sys
 import os
@@ -72,6 +77,10 @@ def main():
         "--case-dir", default=CASE_DIR,
         help=f"测试用例目录 (默认: {CASE_DIR})"
     )
+    parser.add_argument(
+        "--ids", type=str, default="",
+        help="只运行指定 ID 的用例，逗号分隔 (如 FUNC-001,FUNC-002)"
+    )
     args = parser.parse_args()
 
     # JUnit 模式：直接走 pytest
@@ -114,6 +123,15 @@ def main():
     if not cases:
         print("未找到任何 YAML 测试用例。")
         return
+
+    # --ids 筛选
+    if args.ids:
+        id_set = set(s.strip() for s in args.ids.split(",") if s.strip())
+        cases = [c for c in cases if c["id"] in id_set]
+        if not cases:
+            print(f"未找到匹配的用例 ID: {args.ids}")
+            return
+        print(f"筛选后: {len(cases)} 条用例 (IDs: {sorted(id_set)})")
 
     print(f"加载了 {len(cases)} 条用例")
 
@@ -175,7 +193,7 @@ def _print_stability_details(stability: dict) -> None:
     print("  稳定性评测明细")
     print("-" * 60)
     for detail in stability.get("details", []):
-        consistency = "✓" if detail["tool_consistent"] else "✗"
+        consistency = "YES" if detail["tool_consistent"] else "NO"
         print(
             f"  {detail['case_id']:20s}: {detail['passed']}/{detail['runs']} 通过 "
             f"({detail['pass_rate']:.0f}%) 工具一致:{consistency}"

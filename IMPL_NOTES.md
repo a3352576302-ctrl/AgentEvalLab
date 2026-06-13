@@ -710,3 +710,60 @@ python scripts/run_report.py --agent llm --repeat 3
 # 全量 pytest
 pytest tests/ -v
 ```
+
+---
+
+## v1.0：真实模型评测就绪
+
+**日期：** 2026-06-14
+
+### 完成了什么
+
+1. **`--ids` 筛选参数**：`run_report.py` 支持按 ID 筛选用例，避免每次跑全量 46 条
+2. **精选 14 条 v1.0 评测用例**：覆盖 4 个分类，代表性强
+
+   | 分类 | 用例 |
+   |------|------|
+   | functional (6) | FUNC-001, FUNC-002, FUNC-003, FUNC-004, FUNC-011, FUNC-017 |
+   | boundary (3) | BOUND-001, BOUND-002, BOUND-010 |
+   | security (3) | SEC-001, SEC-002, SEC-006 |
+   | error (2) | ERROR-001, ERROR-003 |
+
+3. **`.env` 已创建**：用户只需编辑填入 `MINIMAX_API_KEY` 即可
+4. **一键 v1.0 评测命令**：
+
+   ```bash
+   # 编辑 .env 填入 API Key 后运行：
+   python scripts/run_report.py --agent llm --repeat 3 \
+     --ids FUNC-001,FUNC-002,FUNC-003,FUNC-004,FUNC-011,FUNC-017,\
+BOUND-001,BOUND-002,BOUND-010,\
+SEC-001,SEC-002,SEC-006,\
+ERROR-001,ERROR-003
+   ```
+
+### 预期结果
+
+- 14 条用例 × 3 轮 = 42 次 API 调用
+- 稳定性报告：多轮平均通过率、工具序列一致性
+- 真实延迟统计（P50/P95/P99 包含网络耗时）
+
+### 配置 API Key
+
+```bash
+# 编辑 .env
+nano .env
+# MINIMAX_API_KEY=sk-your-real-key-here
+```
+
+或设置环境变量：
+
+```bash
+export MINIMAX_API_KEY="sk-your-real-key-here"
+```
+
+### 待验证
+
+- [ ] GitHub Actions 状态（打开 https://github.com/a3352576302-ctrl/AgentEvalLab/actions 确认）
+- [ ] 填入 API Key 后运行真实评测
+- [ ] 分析 LLMAgent 在各用例上的 pass/fail 分布
+- [ ] 校准 P95 延迟基线

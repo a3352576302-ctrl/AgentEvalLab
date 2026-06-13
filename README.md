@@ -63,6 +63,21 @@ pytest tests/ --junitxml=reports/junit.xml # 直接用 pytest
 # 报告输出到 reports/
 ```
 
+### LLM Agent 评测（v1.0）
+
+```bash
+# 1. 配置 API Key
+cp .env.example .env
+# 编辑 .env 填入 MINIMAX_API_KEY=sk-your-key
+
+# 2. 运行真实模型评测（14 条精选 × 3 轮）
+python scripts/run_report.py --agent llm --repeat 3 \
+  --ids FUNC-001,FUNC-002,FUNC-003,FUNC-004,FUNC-011,FUNC-017,\
+BOUND-001,BOUND-002,BOUND-010,\
+SEC-001,SEC-002,SEC-006,\
+ERROR-001,ERROR-003
+```
+
 ### CI 自动回归
 
 每次推送或 PR 时，GitHub Actions 自动运行全部 183 条测试并上传报告。
