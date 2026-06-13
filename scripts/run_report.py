@@ -81,6 +81,14 @@ def main():
         "--ids", type=str, default="",
         help="只运行指定 ID 的用例，逗号分隔 (如 FUNC-001,FUNC-002)"
     )
+    parser.add_argument(
+        "--model", type=str, default=None,
+        help="LLM 模型名称 (如 deepseek-chat, minimax-m2, gpt-4o)"
+    )
+    parser.add_argument(
+        "--base-url", type=str, default=None,
+        help="API 端点 URL (如 https://api.deepseek.com/v1)"
+    )
     args = parser.parse_args()
 
     # JUnit 模式：直接走 pytest
@@ -99,8 +107,13 @@ def main():
 
     # 创建 Agent
     if args.agent == "llm":
-        agent = LLMAgent()
-        agent_label = "LLMAgent (真实模型)"
+        kwargs = {}
+        if args.model:
+            kwargs["model"] = args.model
+        if args.base_url:
+            kwargs["base_url"] = args.base_url
+        agent = LLMAgent(**kwargs)
+        agent_label = f"LLMAgent ({args.model or agent.model})"
     else:
         agent = RuleBasedAgent()
         agent_label = "RuleBasedAgent"
