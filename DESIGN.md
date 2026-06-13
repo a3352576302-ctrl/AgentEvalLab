@@ -328,12 +328,10 @@ jobs:
 | **v0.1** | 核心闭环：YAML → Agent → 轨迹 → L1-L4 断言 → pytest → 控制台摘要 | ✅ |
 | **v0.2** | 故障注入（6 种）+ 用例扩展到 46 条 | ✅ |
 | **v0.3** | HTML 报告 + P50/P95/P99 延迟统计 | ✅ |
-| **v0.4** | GitHub Actions CI + JUnit XML | ✅ ← 当前 |
-| **v0.5** | 安全断言增强 + LLMAgent 适配器 | ← 下一步 |
-| v0.2 | 故障注入（6 种）+ boundary/error/security 用例扩展 | |
-| v0.3 | HTML 报告 + 延迟统计（P50/P95/P99）+ 用例扩展到 40-50 条 | |
-| v0.4 | GitHub Actions CI + JUnit XML | |
-| v1.0 | LLMAgent adapter 对接真实 API | |
+| **v0.4** | GitHub Actions CI + JUnit XML | ✅ |
+| **v0.5** | 安全断言增强 + LLMAgent 适配器 + CLI 接入 + 稳定性评测 | ✅ |
+| **v0.5.6** | Bug 修复：FC 消息顺序、安全误判、端到端延迟、CLI 参数 | ✅ ← 当前 |
+| **v1.0** | 真实模型评测（10-15 条用例 × 3 轮） + Git push + Actions 绿 | 下一步 |
 
 ---
 

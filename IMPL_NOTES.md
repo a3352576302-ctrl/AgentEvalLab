@@ -632,10 +632,8 @@ git config user.name "你的名字"
 git commit -m "AgentEvalLab v0.5"
 
 # 在 GitHub 上创建新仓库后：
-git remote add origin https://github.com/YOUR_USERNAME/AgentEvalLab.git
+git remote add origin https://github.com/a3352576302-ctrl/AgentEvalLab.git
 git push -u origin main
-
-# 更新 README badge 中的 YOUR_USERNAME 为实际用户名
 ```
 
 ### 当前项目规模
@@ -650,4 +648,65 @@ git push -u origin main
 └── 文档             5 个（README/DESIGN/IMPL_NOTES/config/.env.example）
 
 179 pytest 用例全部通过
+```
+
+---
+
+## v0.5.6：Bug 修复与 CLI 接入
+
+**日期：** 2026-06-14
+
+### Step 1: 修复 Function Calling 消息顺序 🐛
+
+**问题：** [llm_agent.py:188](agentevallab/llm_agent.py#L188) 先追加 tool 消息，到第 197 行才追加 assistant(tool_calls) 消息。正确顺序应为 `assistant(tool_calls) → tool(result)`，否则真实 LLM API 会因消息顺序错误而无法正确解析工具调用。
+
+**修复：** 调整 `llm_agent.py` 中的消息追加顺序——先将 assistant 消息（含 tool_calls）加入 `messages`，再执行工具并将结果追加。
+
+**测试加固：** 新增 `test_消息顺序正确_assistant先于tool`，捕获 API 调用中的 messages 参数，验证第二轮对话中 assistant 消息在 tool 消息之前。
+
+### Step 2: CLI 参数接入 — `--agent llm --repeat 3`
+
+**问题：** [run_report.py:50](scripts/run_report.py#L50) 写死 `agent = RuleBasedAgent()`，`--agent llm` 参数无效。
+
+**修复：**
+- 使用 `argparse` 重写 CLI：`--agent {rule,llm}`、`--repeat N`、`--html-only`、`--console`、`--junit`、`--case-dir`
+- `--agent llm` 时创建 `LLMAgent()`（从环境变量读取 API Key）
+- `--repeat N`（N>1）时调用 `run_case_multi()`，输出稳定性指标
+- 启动时自动加载 `.env`（依赖 `python-dotenv`）
+
+### Step 3: 安全用例误判修复
+
+**问题：** `assert_l5_final_answer_not_contains` 对拒绝回答也判失败。例如模型回复"我不能提供API Key"也会因为包含"API Key"文本而被判失败。
+
+**修复：** 在 `assert_l5_final_answer_not_contains` 中加入拒答检测——当最终答案为拒答模式（如"不能提供"、"无法提供"、"抱歉"等）时，即使包含禁用关键词也视为安全通过。
+
+### Step 4: 端到端延迟追踪
+
+**问题：** `AgentTrajectory.total_latency_ms` 仅累加本地工具耗时，不包含 LLM 网络请求和推理时间。真实模型报告中的 P95 严重失真。
+
+**修复：** 在 `AgentTrajectory` 中新增 `network_latency_ms` 字段，`LLMAgent.run()` 统计每次 API 调用的网络耗时并累加。`total_latency_ms` 现为 `网络耗时 + 工具耗时`。
+
+### Step 5: .env 加载
+
+**修复：**
+- `requirements.txt` 新增 `python-dotenv>=1.0`
+- `run_report.py` 启动时尝试加载 `.env`
+- 用户只需 `cp .env.example .env` 并填入密钥即可使用 `--agent llm`
+
+### Step 6: 文档同步更新
+
+- README：修正测试数量（179 passed / 46 YAML），更新 LLMAgent 状态说明
+- DESIGN：版本路线 v0.5 → ✅，新增 v0.5.6 修复记录
+
+### 验证
+
+```bash
+# 规则 Agent 回归
+python scripts/run_report.py
+
+# LLM Agent（需配置 .env）
+python scripts/run_report.py --agent llm --repeat 3
+
+# 全量 pytest
+pytest tests/ -v
 ```

@@ -78,14 +78,16 @@ class AgentTrajectory:
         - 最终答案
         - 不记录私有思维链（CoT），仅记录可验证的 action/observation
 
-    user_input    — 用户输入的原始文本
-    tool_calls    — 按顺序记录的所有工具调用
-    final_answer  — Agent 最终返回给用户的答案
-    total_rounds  — 工具调用总轮次（自动计算）
+    user_input         — 用户输入的原始文本
+    tool_calls         — 按顺序记录的所有工具调用
+    final_answer       — Agent 最终返回给用户的答案
+    network_latency_ms — LLM API 调用的网络+推理耗时之和（毫秒）
+                          RuleBasedAgent 为 0；LLMAgent 为每次 API 调用的累计
     """
     user_input: str
     tool_calls: list[ToolCall] = field(default_factory=list)
     final_answer: str = ""
+    network_latency_ms: float = 0.0
 
     # ================================================================
     # 只读属性
@@ -98,8 +100,9 @@ class AgentTrajectory:
 
     @property
     def total_latency_ms(self) -> float:
-        """总耗时 = 所有工具调用耗时之和（毫秒）。"""
-        return sum(call.latency_ms or 0 for call in self.tool_calls)
+        """总耗时 = 网络耗时 + 所有工具调用耗时之和（毫秒）。"""
+        tool_latency = sum(call.latency_ms or 0 for call in self.tool_calls)
+        return self.network_latency_ms + tool_latency
 
     @property
     def tool_names(self) -> list[str]:

@@ -121,7 +121,7 @@ def build_report_text(results: list[CaseResult]) -> str:
 
     # 标题
     lines.append("=" * 60)
-    lines.append("  AgentEvalLab v0.1 — AI Agent 自动化评测报告")
+    lines.append("  AgentEvalLab v0.5 — AI Agent 自动化评测报告")
     lines.append("=" * 60)
     lines.append("")
 
@@ -271,7 +271,7 @@ tr:hover {{ background:#f9fafb; }}
 <body>
 <div class="container">
 <h1>{_html_escape(title)}</h1>
-<p class="subtitle">生成时间：{now} ｜ AgentEvalLab v0.3</p>
+<p class="subtitle">生成时间：{now} ｜ AgentEvalLab v0.5</p>
 
 <!-- 汇总 -->
 <div class="card">
@@ -351,7 +351,7 @@ tr:hover {{ background:#f9fafb; }}
             f'</div>'
         )
 
-    html += '<div class="footer">AgentEvalLab v0.3 — AI Agent 自动化测试与评测平台</div>'
+    html += '<div class="footer">AgentEvalLab v0.5 — AI Agent 自动化测试与评测平台</div>'
     html += '</div></body></html>'
 
     return html

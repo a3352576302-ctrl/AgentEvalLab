@@ -135,6 +135,7 @@ class LLMAgent(AgentProtocol):
 
         for _round in range(self.max_rounds):
             try:
+                t_api_start = time.perf_counter()
                 response = client.chat.completions.create(
                     model=self.model,
                     messages=messages,
@@ -142,6 +143,8 @@ class LLMAgent(AgentProtocol):
                     tool_choice="auto",
                     temperature=0.1,  # 低温度减少随机性
                 )
+                api_latency = (time.perf_counter() - t_api_start) * 1000
+                traj.network_latency_ms += api_latency
             except Exception as e:
                 traj.set_final_answer(f"LLM 调用失败：{e}")
                 return traj
@@ -154,7 +157,10 @@ class LLMAgent(AgentProtocol):
                 traj.set_final_answer(msg.content or "")
                 return traj
 
-            # 执行所有工具调用
+            # 先将 assistant 消息（含 tool_calls）加入对话
+            messages.append(msg)
+
+            # 再执行所有工具调用，将工具结果加入对话
             for tool_call in msg.tool_calls:
                 tool_name = tool_call.function.name
                 try:
@@ -184,7 +190,7 @@ class LLMAgent(AgentProtocol):
                 )
                 traj.add_tool_call(call_record)
 
-                # 将工具结果加入对话
+                # 将工具结果加入对话（在 assistant 消息之后）
                 messages.append({
                     "role": "tool",
                     "tool_call_id": tool_call.id,
@@ -192,9 +198,6 @@ class LLMAgent(AgentProtocol):
                     if result.success
                     else result.error,
                 })
-
-            # 将 assistant 消息加入对话
-            messages.append(msg)
 
         # 超过最大轮次
         traj.set_final_answer("达到最大工具调用轮次限制")

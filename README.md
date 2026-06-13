@@ -65,7 +65,7 @@ pytest tests/ --junitxml=reports/junit.xml # 直接用 pytest
 
 ### CI 自动回归
 
-每次推送或 PR 时，GitHub Actions 自动运行全部 156 条测试并上传报告。
+每次推送或 PR 时，GitHub Actions 自动运行全部 183 条测试并上传报告。
 
 ---
 
@@ -77,10 +77,11 @@ AgentEvalLab/
 │   ├── tools.py               # 3 个模拟工具（计算器/天气/知识库）
 │   ├── trajectory.py          # 轨迹数据结构（ToolCall/AgentTrajectory）
 │   ├── agent.py               # AgentProtocol + RuleBasedAgent
-│   ├── assertions.py          # L1-L4 四层断言引擎
-│   ├── runner.py              # YAML 加载 + 用例执行
+│   ├── llm_agent.py           # LLMAgent 适配器（OpenAI 兼容 API）
+│   ├── assertions.py          # L1-L5 五层断言引擎
+│   ├── runner.py              # YAML 加载 + 用例执行 + 稳定性评测
 │   ├── fault_injector.py      # 6 种故障注入（装饰器实现）
-│   └── reporter.py            # 控制台 + HTML 报告
+│   └── reporter.py            # 控制台 + HTML 报告 + 稳定性指标
 ├── scripts/
 │   └── run_report.py           # 一键报告生成
 ├── reports/
@@ -225,11 +226,12 @@ with fault_context("weather", "timeout", delay=3.0):
 
 ## 已知限制
 
-1. **v0.1 使用规则引擎 Agent**，不接真实 LLM API。后续通过 AgentProtocol 接口对接。
+1. **LLMAgent 适配器已就绪**，支持 OpenAI 兼容 API（MiniMax/OpenAI/DeepSeek）。需配置 API Key。
 2. **工具数量有限**（3 个），适用于演示框架设计，生产环境可扩展。
 3. **知识库为静态字典**，无检索/向量化环节。
 4. **报告支持控制台、HTML 和 JUnit XML** 三种输出格式。
-5. **延迟测试为模拟值**，真实 Agent 的延迟受网络和模型推理影响。
+5. **真实模型评测**待进行：延迟受网络和模型推理影响，需实际运行后校准。
+6. **安全断言**对拒答场景已做放行处理，但复杂边界仍需真实模型验证。
 
 ---
 
@@ -238,10 +240,12 @@ with fault_context("weather", "timeout", delay=3.0):
 | 版本 | 内容 |
 |------|------|
 | v0.1 | 核心闭环：YAML → Agent → 轨迹 → L1-L4 断言 → pytest ✅ |
-| v0.2 | 故障注入 + 用例扩展到 40-50 条 |
+| v0.2 | 故障注入 + 用例扩展到 40-50 条 ✅ |
 | v0.3 | HTML 报告 + P50/P95/P99 延迟统计 ✅ |
 | v0.4 | GitHub Actions CI + JUnit XML ✅ |
-| v1.0 | LLMAgent adapter 对接真实 API |
+| v0.5 | 安全断言(L5) + LLMAgent 适配器 + CLI 参数 + 稳定性评测 ✅ |
+| v0.5.6 | Bug 修复：FC 消息顺序、安全误判、端到端延迟 ← 当前 |
+| v1.0 | 真实模型评测 + 端到端测试记录 |
 
 ---
 

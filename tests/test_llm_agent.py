@@ -127,3 +127,56 @@ class TestLLMAgentWithMock:
             traj = agent_with_key.run("北京天气怎么样？")
 
         assert "失败" in traj.final_answer
+
+    def test_消息顺序正确_assistant先于tool(self, agent_with_key):
+        """验证发送给 LLM 的消息顺序：assistant(tool_calls) → tool(result)"""
+        tool_msg = MagicMock()
+        tool_msg.content = None
+        tool_call = MagicMock()
+        tool_call.id = "call_001"
+        tool_call.function.name = "weather"
+        tool_call.function.arguments = '{"city": "北京"}'
+        tool_msg.tool_calls = [tool_call]
+
+        final_msg = MagicMock()
+        final_msg.content = "北京今天晴，35°C。"
+        final_msg.tool_calls = None
+
+        captured_calls = []
+
+        def capture_create(*args, **kwargs):
+            captured_calls.append(dict(kwargs))
+            if len(captured_calls) == 1:
+                return MagicMock(choices=[MagicMock(message=tool_msg)])
+            return MagicMock(choices=[MagicMock(message=final_msg)])
+
+        with patch(
+            "openai.resources.chat.completions.Completions.create",
+            side_effect=capture_create,
+        ):
+            agent_with_key.run("北京天气怎么样？")
+
+        # 第二轮调用应包含 assistant(tool_calls) 和 tool(result)
+        assert len(captured_calls) >= 2, f"应至少有2次API调用，实际{len(captured_calls)}次"
+        second_messages = captured_calls[1].get("messages", [])
+
+        # 提取角色：dict 用 .get("role")，MagicMock 用 .role 属性
+        roles = []
+        for m in second_messages:
+            if isinstance(m, dict):
+                roles.append(m.get("role", ""))
+            else:
+                # MagicMock — assistant 消息对象
+                roles.append(getattr(m, "role", str(type(m).__name__)))
+
+        # 验证消息中有 tool 角色（说明 assistant 在它之前被追加）
+        assert "tool" in roles, f"第二轮消息应包含 tool，实际 roles={roles}"
+        # 验证 assistant 消息（MagicMock 对象）在 tool 之前
+        tool_idx = roles.index("tool")
+        has_non_dict_before_tool = any(
+            not isinstance(second_messages[i], dict)
+            for i in range(tool_idx)
+        )
+        assert has_non_dict_before_tool, (
+            f"消息顺序错误: tool 之前应有 assistant 消息，roles={roles}"
+        )
