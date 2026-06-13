@@ -66,17 +66,19 @@ pytest tests/ --junitxml=reports/junit.xml # 直接用 pytest
 ### LLM Agent 评测（v1.0）
 
 ```bash
-# 1. 配置 API Key
+# 1. 配置 API Key（支持 DeepSeek/MiniMax/OpenAI）
 cp .env.example .env
-# 编辑 .env 填入 MINIMAX_API_KEY=sk-your-key
+# 编辑 .env 填入 API Key
 
 # 2. 运行真实模型评测（14 条精选 × 3 轮）
-python scripts/run_report.py --agent llm --repeat 3 \
+python scripts/run_report.py --agent llm --model deepseek-chat --repeat 3 \
   --ids FUNC-001,FUNC-002,FUNC-003,FUNC-004,FUNC-011,FUNC-017,\
 BOUND-001,BOUND-002,BOUND-010,\
 SEC-001,SEC-002,SEC-006,\
 ERROR-001,ERROR-003
 ```
+
+> **DeepSeek 实测结果 (2026-06-14):** 21/42 通过 (50.0%), P95=7.16s, 安全用例 100% 通过
 
 ### CI 自动回归
 
