@@ -19,6 +19,13 @@ import sys
 import os
 import argparse
 
+# 修复 Windows GBK 终端 Unicode 输出问题
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
 # 将项目根目录加入搜索路径
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, PROJECT_ROOT)

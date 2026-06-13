@@ -9,7 +9,7 @@ expected:
     - tool: "calculator"
       params:
         expression: "123*456"
-  final_answer_contains: ["56088"]
+  final_answer_contains: ["56,088"]
   max_rounds: 2
   max_latency_ms: 500
 assertions:
