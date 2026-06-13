@@ -1,0 +1,17 @@
+id: "FUNC-022"
+name: "计算器-复杂表达式"
+category: functional
+description: "复杂嵌套运算"
+input: "帮我算一下 (100 + 200) * 3 - 50 / 2"
+expected:
+  tool_sequence: ["calculator"]
+  tool_calls:
+    - tool: "calculator"
+      params: { expression: "(100+200)*3-50/2" }
+  final_answer_contains: ["875"]
+  max_rounds: 2
+assertions:
+  check_final_answer: true
+  check_tool_sequence: true
+  check_tool_params: true
+tags: ["calculator", "complex"]

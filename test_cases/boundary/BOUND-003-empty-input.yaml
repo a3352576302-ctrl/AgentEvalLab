@@ -1,0 +1,14 @@
+id: "BOUND-003"
+name: "边界-空字符串输入"
+category: boundary
+description: "空字符串输入不应导致 Agent 崩溃"
+input: ""
+expected:
+  tool_sequence: []
+  max_rounds: 1
+assertions:
+  check_final_answer: false
+  check_tool_sequence: true
+  check_tool_params: false
+  check_max_rounds: true
+tags: ["boundary", "error-handling", "empty-input"]

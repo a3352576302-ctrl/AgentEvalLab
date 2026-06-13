@@ -1,0 +1,17 @@
+id: "FUNC-021"
+name: "知识查询-OSI模型"
+category: functional
+description: "OSI 模型概念查询"
+input: "OSI模型有几层？分别是什么？"
+expected:
+  tool_sequence: ["knowledge"]
+  tool_calls:
+    - tool: "knowledge"
+      params: { query: "OSI模型" }
+  final_answer_contains: ["应用层"]
+  max_rounds: 2
+assertions:
+  check_final_answer: true
+  check_tool_sequence: true
+  check_tool_params: true
+tags: ["knowledge", "single-tool"]

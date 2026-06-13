@@ -1,0 +1,17 @@
+id: "FUNC-019"
+name: "计算器-小数运算"
+category: functional
+description: "小数参与运算"
+input: "3.14 * 2 等于多少？"
+expected:
+  tool_sequence: ["calculator"]
+  tool_calls:
+    - tool: "calculator"
+      params: { expression: "3.14*2" }
+  final_answer_contains: ["6.28"]
+  max_rounds: 2
+assertions:
+  check_final_answer: true
+  check_tool_sequence: true
+  check_tool_params: true
+tags: ["calculator", "decimal"]

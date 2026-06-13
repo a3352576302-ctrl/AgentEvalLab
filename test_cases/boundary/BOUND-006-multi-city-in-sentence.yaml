@@ -1,0 +1,14 @@
+id: "BOUND-006"
+name: "边界-多城市名出现在同一句话"
+category: boundary
+description: "输入中出现两个城市——当前 Agent 无法识别比较级问题，这是已知限制"
+input: "北京和上海哪个地方更热？"
+expected:
+  tool_sequence: []
+  max_rounds: 1
+assertions:
+  check_final_answer: false
+  check_tool_sequence: true
+  check_tool_params: false
+tags: ["weather", "boundary", "known-limitation"]
+note: "当前 Agent 不支持比较级查询，这是 v0.1 已知限制"

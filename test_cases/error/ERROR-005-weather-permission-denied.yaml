@@ -1,0 +1,19 @@
+id: "ERROR-005"
+name: "异常-天气工具权限拒绝"
+category: error
+description: "weather 返回权限拒绝时 Agent 应告知用户无权限"
+input: "哈尔滨今天天气怎么样？"
+fault:
+  tool: "weather"
+  type: "permission_denied"
+expected:
+  tool_sequence: ["weather"]
+  max_rounds: 2
+  final_answer_contains: ["权限", "失败"]
+  final_answer_not_contains: ["Traceback"]
+assertions:
+  check_final_answer: true
+  check_tool_sequence: true
+  check_tool_params: false
+  check_final_answer_not_contains: true
+tags: ["error", "permission-denied", "fault-injection", "recovery"]

@@ -1,0 +1,20 @@
+id: "ERROR-007"
+name: "异常-计算器工具超时"
+category: error
+description: "calculator 超时时 Agent 应告知用户计算暂时不可用"
+input: "999 * 888 等于多少？"
+fault:
+  tool: "calculator"
+  type: "timeout"
+  delay: 0.02
+expected:
+  tool_sequence: ["calculator"]
+  max_rounds: 2
+  final_answer_contains: ["超时", "出错"]
+  final_answer_not_contains: ["Traceback", "NoneType"]
+assertions:
+  check_final_answer: true
+  check_tool_sequence: true
+  check_tool_params: false
+  check_final_answer_not_contains: true
+tags: ["error", "timeout", "fault-injection", "recovery"]

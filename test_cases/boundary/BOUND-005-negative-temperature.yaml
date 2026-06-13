@@ -1,0 +1,17 @@
+id: "BOUND-005"
+name: "边界-零下温度"
+category: boundary
+description: "哈尔滨零下温度查询，验证负数温度显示"
+input: "哈尔滨多少度？"
+expected:
+  tool_sequence: ["weather"]
+  tool_calls:
+    - tool: "weather"
+      params: { city: "哈尔滨" }
+  final_answer_contains: ["-15"]
+  max_rounds: 2
+assertions:
+  check_final_answer: true
+  check_tool_sequence: true
+  check_tool_params: true
+tags: ["weather", "boundary", "negative"]

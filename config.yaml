@@ -1,0 +1,36 @@
+# AgentEvalLab 全局配置文件
+# 用于控制评测框架的行为
+
+# Agent 配置
+agent:
+  type: rule_based          # v0.1: rule_based，v1.0: llm
+  max_rounds: 10            # 默认最大工具调用轮次
+
+# 测试用例路径
+test_cases:
+  dir: test_cases           # 用例根目录
+  pattern: "**/*.yaml"      # glob 匹配模式
+
+# 断言开关（全局默认值，可被单个 YAML 覆盖）
+assertions:
+  check_final_answer: true
+  check_tool_sequence: true
+  check_tool_params: true
+  check_max_rounds: true
+  check_latency: false
+
+# 性能阈值
+thresholds:
+  max_latency_ms: 500       # 单用例最大延迟（毫秒）
+  p95_target_ms: 200        # P95 延迟目标
+
+# 故障注入（v0.2）
+fault_injection:
+  enabled: false             # 全局开关
+
+# 报告
+report:
+  console: true             # 控制台摘要
+  json: false               # JSON 报告（v0.3）
+  html: false               # HTML 报告（v0.3）
+  junit: false              # JUnit XML（v0.4）

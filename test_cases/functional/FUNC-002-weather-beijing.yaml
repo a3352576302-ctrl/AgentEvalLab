@@ -1,0 +1,19 @@
+id: "FUNC-002"
+name: "天气查询-北京"
+category: functional
+description: "验证 Agent 正确识别天气查询意图并调用 weather 工具"
+input: "北京今天天气怎么样？"
+expected:
+  tool_sequence: ["weather"]
+  tool_calls:
+    - tool: "weather"
+      params:
+        city: "北京"
+  final_answer_contains: ["北京", "35"]
+  max_rounds: 2
+assertions:
+  check_final_answer: true
+  check_tool_sequence: true
+  check_tool_params: true
+  check_max_rounds: true
+tags: ["weather", "single-tool", "basic"]

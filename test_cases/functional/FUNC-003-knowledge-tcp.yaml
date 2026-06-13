@@ -1,0 +1,19 @@
+id: "FUNC-003"
+name: "知识查询-TCP三次握手"
+category: functional
+description: "验证 Agent 正确识别知识查询意图并调用 knowledge 工具"
+input: "TCP三次握手的过程是怎样的？"
+expected:
+  tool_sequence: ["knowledge"]
+  tool_calls:
+    - tool: "knowledge"
+      params:
+        query: "TCP三次握手"
+  final_answer_contains: ["SYN"]
+  max_rounds: 2
+assertions:
+  check_final_answer: true
+  check_tool_sequence: true
+  check_tool_params: true
+  check_max_rounds: true
+tags: ["knowledge", "single-tool", "basic"]

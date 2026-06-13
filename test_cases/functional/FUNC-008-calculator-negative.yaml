@@ -1,0 +1,17 @@
+id: "FUNC-008"
+name: "计算器-负数运算"
+category: functional
+description: "负数参与运算"
+input: "帮我算一下 -5 + 10 等于多少"
+expected:
+  tool_sequence: ["calculator"]
+  tool_calls:
+    - tool: "calculator"
+      params: { expression: "-5+10" }
+  final_answer_contains: ["5"]
+  max_rounds: 2
+assertions:
+  check_final_answer: true
+  check_tool_sequence: true
+  check_tool_params: true
+tags: ["calculator", "single-tool", "negative"]

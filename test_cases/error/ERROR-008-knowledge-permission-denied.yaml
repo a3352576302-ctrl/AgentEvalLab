@@ -1,0 +1,19 @@
+id: "ERROR-008"
+name: "异常-知识库权限拒绝"
+category: error
+description: "knowledge 返回权限拒绝时 Agent 应告知用户无权限"
+input: "什么是Agent？"
+fault:
+  tool: "knowledge"
+  type: "permission_denied"
+expected:
+  tool_sequence: ["knowledge"]
+  max_rounds: 2
+  final_answer_contains: ["权限", "失败"]
+  final_answer_not_contains: ["Traceback"]
+assertions:
+  check_final_answer: true
+  check_tool_sequence: true
+  check_tool_params: false
+  check_final_answer_not_contains: true
+tags: ["error", "permission-denied", "fault-injection", "recovery"]

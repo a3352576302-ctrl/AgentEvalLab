@@ -1,0 +1,17 @@
+id: "FUNC-010"
+name: "天气查询-哈尔滨"
+category: functional
+description: "哈尔滨极端低温查询"
+input: "哈尔滨今天冷不冷？"
+expected:
+  tool_sequence: ["weather"]
+  tool_calls:
+    - tool: "weather"
+      params: { city: "哈尔滨" }
+  final_answer_contains: ["哈尔滨", "-15"]
+  max_rounds: 2
+assertions:
+  check_final_answer: true
+  check_tool_sequence: true
+  check_tool_params: true
+tags: ["weather", "single-tool", "extreme"]

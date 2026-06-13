@@ -1,0 +1,14 @@
+id: "BOUND-008"
+name: "边界-特殊字符输入"
+category: boundary
+description: "特殊符号 + 天气关键词 — Agent 会尝试提取城市（可能提取为'今天'），不应崩溃"
+input: "!!!@#$% 今天天气怎么样"
+expected:
+  tool_sequence: ["weather"]
+  max_rounds: 2
+assertions:
+  check_final_answer: false
+  check_tool_sequence: true
+  check_tool_params: false
+tags: ["boundary", "special-chars", "robustness"]
+note: "正则兜底匹配会提取'今天'作为城市名——虽然是误匹配，但 Agent 不崩溃"

@@ -1,0 +1,13 @@
+id: "BOUND-002"
+name: "边界-不存在的城市"
+category: boundary
+description: "查询不存在的城市，weather 失败但 Agent 应优雅处理"
+input: "火星今天天气怎么样？"
+expected:
+  tool_sequence: ["weather"]
+  max_rounds: 2
+assertions:
+  check_final_answer: false
+  check_tool_sequence: true
+  check_tool_params: false
+tags: ["weather", "boundary", "error-handling"]

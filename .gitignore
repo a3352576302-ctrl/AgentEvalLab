@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+
+# 测试
+.pytest_cache/
+.coverage
+htmlcov/
+
+# 报告（每次运行生成，不纳入版本控制）
+reports/*.html
+reports/*.xml
+
+# IDE
+.vscode/
+.idea/
+
+# 环境变量（防止 API Key 泄露）
+.env
+.env.local
+
+# 临时文件
+*.tmp
+tmp/

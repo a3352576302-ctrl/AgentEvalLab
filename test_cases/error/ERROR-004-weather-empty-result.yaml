@@ -1,0 +1,19 @@
+id: "ERROR-004"
+name: "异常-天气工具返回空结果"
+category: error
+description: "weather 返回空结果时 Agent 应告知用户数据缺失"
+input: "成都天气怎么样？"
+fault:
+  tool: "weather"
+  type: "empty_result"
+expected:
+  tool_sequence: ["weather"]
+  max_rounds: 2
+  final_answer_contains: ["失败"]
+  final_answer_not_contains: ["Traceback"]
+assertions:
+  check_final_answer: true
+  check_tool_sequence: true
+  check_tool_params: false
+  check_final_answer_not_contains: true
+tags: ["error", "empty-result", "fault-injection", "recovery"]
