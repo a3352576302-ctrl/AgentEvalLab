@@ -763,7 +763,7 @@ export MINIMAX_API_KEY="sk-your-real-key-here"
 
 ### 待验证
 
-- [ ] GitHub Actions 状态（打开 https://github.com/a3352576302-ctrl/AgentEvalLab/actions 确认）
+- [x] GitHub Actions 状态（2026-06-14 确认：🟢 全部通过）
 - [ ] 填入 API Key 后运行真实评测
 - [ ] 分析 LLMAgent 在各用例上的 pass/fail 分布
 - [ ] 校准 P95 延迟基线
