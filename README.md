@@ -2,8 +2,7 @@
 
 **AI Agent 自动化测试与评测平台**
 
-[![Regression Test](https://github.com/sitaikang/AgentEvalLab/actions/workflows/regression.yml/badge.svg)](https://github.com/sitaikang/AgentEvalLab/actions/workflows/regression.yml)
-<!-- 推送到 GitHub 后替换 sitaikang 为你的 GitHub 用户名 -->
+[![Regression Test](https://github.com/a3352576302-ctrl/AgentEvalLab/actions/workflows/regression.yml/badge.svg)](https://github.com/a3352576302-ctrl/AgentEvalLab/actions/workflows/regression.yml)
 
 基于 pytest + YAML 用例驱动的 AI Agent 评测框架。通过记录 Agent 的工具调用、参数、返回结果和最终答案，从**最终结果、工具选择、参数传递、调用顺序、异常恢复、安全合规**六个维度评估 Agent 行为。
 
