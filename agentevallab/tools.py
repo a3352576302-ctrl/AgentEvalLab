@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import ast
 import operator
+import re
 import time
 from typing import Any
 
@@ -140,13 +141,15 @@ def tool_calculator(expression: str) -> ToolResult:
     返回：
         ToolResult，成功时 data.result 为计算结果
     """
+    # 归一化：去除所有空格（LLM 经常给表达式加空格）
+    normalized = re.sub(r'\s+', '', expression)
     t0 = time.perf_counter()
     try:
-        result = _safe_eval(expression)
+        result = _safe_eval(normalized)
         latency = (time.perf_counter() - t0) * 1000
         return ToolResult(
             success=True,
-            data={"expression": expression, "result": result},
+            data={"expression": normalized, "result": result},
             latency_ms=latency,
         )
     except Exception as e:

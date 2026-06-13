@@ -9,6 +9,7 @@ expected:
     - tool: "knowledge"
       params:
         query: "TCP三次握手"
+  # 注意：LLM 可能传递更详细的查询如"TCP三次握手过程"，知识库通过 key in query 匹配
   final_answer_contains: ["SYN"]
   max_rounds: 2
 assertions:

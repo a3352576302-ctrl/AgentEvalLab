@@ -73,9 +73,10 @@ def assert_l1_final_answer(
     traj: AgentTrajectory,
     expected_contains: list[str],
 ) -> AssertionResult:
-    """L1：检查最终答案是否包含所有预期关键词。
+    """L1 (AND)：检查最终答案是否包含所有预期关键词。
 
     如果 expected_contains 为空列表，视为不检查，直接通过。
+    所有关键词必须出现在答案中。
     """
     if not expected_contains:
         return AssertionResult(level="L1", name="最终答案包含检查", passed=True)
@@ -93,6 +94,33 @@ def assert_l1_final_answer(
             ),
         )
     return AssertionResult(level="L1", name="最终答案包含检查", passed=True)
+
+
+def assert_l1_final_answer_contains_any(
+    traj: AgentTrajectory,
+    any_contains: list[str],
+) -> AssertionResult:
+    """L1 (OR)：检查最终答案是否至少包含一个预期关键词。
+
+    用于容忍 LLM 的格式化差异（如 56088 vs 56,088）。
+    如果 any_contains 为空列表，视为不检查，直接通过。
+    """
+    if not any_contains:
+        return AssertionResult(level="L1", name="最终答案包含检查(OR)", passed=True)
+
+    found = [kw for kw in any_contains if kw in traj.final_answer]
+
+    if not found:
+        return AssertionResult(
+            level="L1",
+            name="最终答案包含检查(OR)",
+            passed=False,
+            reason=(
+                f"最终答案未包含任一预期关键词: {any_contains}。"
+                f" 实际答案: '{traj.final_answer[:100]}'"
+            ),
+        )
+    return AssertionResult(level="L1", name="最终答案包含检查(OR)", passed=True)
 
 
 # ============================================================
@@ -166,7 +194,18 @@ def assert_l3_tool_params(
         # 检查参数
         for key, expected_val in expected_params.items():
             actual_val = actual_call.params.get(key)
-            if actual_val != expected_val:
+            # 字符串参数：归一化后使用"包含"匹配，容忍 LLM 的自然语言变异
+            # 例如 query="TCP三次握手" 匹配 query="TCP三次握手过程"
+            # expression="(1+2)*3" 匹配 expression="(1 + 2) * 3"（去空格后）
+            if isinstance(expected_val, str) and isinstance(actual_val, str):
+                norm_expected = expected_val.replace(" ", "")
+                norm_actual = actual_val.replace(" ", "")
+                if norm_expected not in norm_actual and norm_actual not in norm_expected:
+                    errors.append(
+                        f"第 {i+1} 个调用的参数 '{key}' 不匹配："
+                        f"预期包含 '{expected_val}'，实际 '{actual_val}'"
+                    )
+            elif actual_val != expected_val:
                 errors.append(
                     f"第 {i+1} 个调用的参数 '{key}' 不匹配："
                     f"预期 '{expected_val}'，实际 '{actual_val}'"
@@ -383,9 +422,18 @@ def assert_trajectory(
 
     # L1
     if switches.get("check_final_answer", True):
-        report.results.append(
-            assert_l1_final_answer(traj, expected.get("final_answer_contains", []))
-        )
+        any_list = expected.get("final_answer_contains_any", [])
+        and_list = expected.get("final_answer_contains", [])
+        if any_list:
+            # OR 模式：任一匹配即通过
+            report.results.append(
+                assert_l1_final_answer_contains_any(traj, any_list)
+            )
+        else:
+            # AND 模式：全部匹配才通过
+            report.results.append(
+                assert_l1_final_answer(traj, and_list)
+            )
 
     # L2
     if switches.get("check_tool_sequence", True):

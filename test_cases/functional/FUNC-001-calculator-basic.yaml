@@ -9,7 +9,7 @@ expected:
     - tool: "calculator"
       params:
         expression: "123*456"
-  final_answer_contains: ["56,088"]
+  final_answer_contains_any: ["56088", "56,088"]  # LLM可能加千分位逗号
   max_rounds: 2
   max_latency_ms: 500
 assertions:
