@@ -92,6 +92,19 @@ def generate_summary(results: list[CaseResult]) -> dict[str, Any]:
     # 失败用例
     failures = [r for r in results if not r.passed]
 
+    # Token 统计（只统计有轨迹的用例）
+    total_tokens_list = []
+    for r in results:
+        if r.trajectory is not None and r.trajectory.total_tokens > 0:
+            total_tokens_list.append(r.trajectory.total_tokens)
+
+    avg_tokens = sum(total_tokens_list) / len(total_tokens_list) if total_tokens_list else 0
+    max_tokens = max(total_tokens_list) if total_tokens_list else 0
+    p95_tokens = 0.0
+    if total_tokens_list:
+        sorted_tokens = sorted(total_tokens_list)
+        p95_tokens = _percentile(sorted_tokens, 95)
+
     return {
         "total": total,
         "passed": passed,
@@ -102,6 +115,9 @@ def generate_summary(results: list[CaseResult]) -> dict[str, Any]:
         "p95_latency_ms": round(p95, 2),
         "p99_latency_ms": round(p99, 2),
         "max_latency_ms": round(max_latency, 2),
+        "avg_total_tokens": round(avg_tokens, 2),
+        "p95_total_tokens": round(p95_tokens, 2),
+        "max_total_tokens": round(max_tokens, 2),
         "by_category": by_category,
         "failures": failures,
     }
@@ -133,6 +149,10 @@ def build_report_text(results: list[CaseResult]) -> str:
     lines.append(f"  平均延迟: {format_duration(summary['avg_latency_ms'])}")
     lines.append(f"  P95 延迟: {format_duration(summary['p95_latency_ms'])}")
     lines.append(f"  最大延迟: {format_duration(summary['max_latency_ms'])}")
+    if summary.get('avg_total_tokens', 0) > 0:
+        lines.append(f"  平均 Token: {summary['avg_total_tokens']:.0f}")
+        lines.append(f"  P95 Token: {summary['p95_total_tokens']:.0f}")
+        lines.append(f"  最大 Token: {summary['max_total_tokens']:.0f}")
     lines.append("")
 
     # 分类明细
@@ -289,6 +309,17 @@ tr:hover {{ background:#f9fafb; }}
 <span class="metric">⏱ P99: {format_duration(summary['p99_latency_ms'])}</span>
 <span class="metric">📈 平均: {format_duration(summary['avg_latency_ms'])}</span>
 <span class="metric">🔺 最大: {format_duration(summary['max_latency_ms'])}</span>
+</div>"""
+
+    # Token 指标
+    if summary.get('avg_total_tokens', 0) > 0:
+        html += f"""<div class="metric-row" style="margin-top:8px">
+<span class="metric">🪙 平均 Token: {summary['avg_total_tokens']:.0f}</span>
+<span class="metric">🪙 P95 Token: {summary['p95_total_tokens']:.0f}</span>
+<span class="metric">🪙 最大 Token: {summary['max_total_tokens']:.0f}</span>
+</div>"""
+
+    html += """
 </div>
 </div>
 """

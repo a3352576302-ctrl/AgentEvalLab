@@ -15,6 +15,7 @@ from agentevallab.assertions import (
     AssertionResult,
     AssertionReport,
     assert_l1_final_answer,
+    assert_l1_final_answer_contains_any,
     assert_l2_tool_sequence,
     assert_l3_tool_params,
     assert_l4_max_rounds,
@@ -22,7 +23,10 @@ from agentevallab.assertions import (
     assert_l5_final_answer_not_contains,
     assert_l5_forbidden_tools,
     assert_l5_forbidden_patterns,
+    assert_l6_token_cost,
     assert_trajectory,
+    _generate_number_variants,
+    _expand_with_number_variants,
 )
 
 
@@ -510,3 +514,95 @@ class TestL5Integrated:
         # L5a（不包含）应该失败
         l5a = [r for r in report.results if r.name == "安全-禁止内容检查"][0]
         assert l5a.passed is False
+
+
+# ============================================================
+# 数字变体生成
+# ============================================================
+
+class TestNumberVariants:
+    """自动千分位变体生成"""
+
+    def test_四位数字生成逗号变体(self):
+        variants = _generate_number_variants("1024")
+        assert "1024" in variants
+        assert "1,024" in variants
+
+    def test_三位数字不生成变体(self):
+        variants = _generate_number_variants("123")
+        assert variants == ["123"]
+
+    def test_已有逗号不重复生成(self):
+        variants = _generate_number_variants("1,024")
+        assert variants == ["1,024"]
+
+    def test_非数字不变(self):
+        variants = _generate_number_variants("北京")
+        assert variants == ["北京"]
+
+    def test_列表扩增(self):
+        expanded = _expand_with_number_variants(["1024", "北京", "99999999980000000001"])
+        assert "1024" in expanded
+        assert "1,024" in expanded
+        assert "北京" in expanded
+        assert "99,999,999,980,000,000,001" in expanded
+
+    def test_OR模式自动扩增(self):
+        """L1 OR 模式自动匹配千分位变体"""
+        traj = _make_traj(final_answer="2 ** 10 = 1,024")
+        # 只写 "1024"，自动生成 "1,024" 变体
+        result = assert_l1_final_answer_contains_any(
+            traj, _expand_with_number_variants(["1024"])
+        )
+        assert result.passed is True
+
+
+# ============================================================
+# L6：Token 成本断言
+# ============================================================
+
+class TestL6TokenCost:
+    """L6 Token 成本断言"""
+
+    def test_通过_Token在预算内(self):
+        traj = _make_traj()
+        traj.prompt_tokens = 500
+        traj.completion_tokens = 200
+        traj.total_tokens = 700
+        result = assert_l6_token_cost(traj, max_total_tokens=1000)
+        assert result.passed is True
+
+    def test_失败_Token超限(self):
+        traj = _make_traj()
+        traj.prompt_tokens = 800
+        traj.completion_tokens = 500
+        traj.total_tokens = 1300
+        result = assert_l6_token_cost(traj, max_total_tokens=1000)
+        assert result.passed is False
+
+    def test_未设置上限时跳过(self):
+        traj = _make_traj()
+        traj.total_tokens = 1300
+        result = assert_l6_token_cost(traj, max_total_tokens=None)
+        assert result.passed is True
+
+    def test_通过开关启用L6(self):
+        traj = _make_traj()
+        traj.prompt_tokens = 500
+        traj.completion_tokens = 300
+        traj.total_tokens = 800
+        expected = {"max_total_tokens": 1000}
+        switches = {"check_token_cost": True}
+        report = assert_trajectory(traj, expected, switches)
+        assert report.all_passed is True
+
+    def test_开关关闭时跳过L6(self):
+        traj = _make_traj()
+        traj.total_tokens = 99999
+        expected = {"max_total_tokens": 100}
+        switches = {"check_token_cost": False}
+        report = assert_trajectory(traj, expected, switches)
+        # L6 没开，不检查 Token，全部通过
+        assert report.all_passed is True
+        l6_results = [r for r in report.results if r.level == "L6"]
+        assert len(l6_results) == 0

@@ -88,6 +88,10 @@ class AgentTrajectory:
     tool_calls: list[ToolCall] = field(default_factory=list)
     final_answer: str = ""
     network_latency_ms: float = 0.0
+    # Token 用量（从 LLM API 返回的 usage 中提取）
+    prompt_tokens: int = 0
+    completion_tokens: int = 0
+    total_tokens: int = 0
 
     # ================================================================
     # 只读属性

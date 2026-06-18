@@ -790,3 +790,33 @@ FUNC-001, FUNC-002, FUNC-003, SEC-001, SEC-002, SEC-006
 - [x] 填入 API Key 后运行真实评测（DeepSeek, 21/42 通过）
 - [x] 分析 LLMAgent 在各用例上的 pass/fail 分布
 - [x] 校准 P95 延迟基线（7.16s）
+
+---
+
+## v0.5.7：数字自动变体 + Token 成本层 (L6)
+
+**日期：** 2026-06-14
+
+### 数字千分位自动变体
+
+**问题：** 手动在 YAML 里写 `["56088", "56,088"]`，每条有数字的用例都要维护两个版本。
+
+**实现：**
+- `_generate_number_variants(keyword)` — 输入 `"1024"`，返回 `["1024", "1,024"]`
+- `_expand_with_number_variants(keywords)` — 对列表批量扩增
+- 自动扩增仅对 OR 模式（`final_answer_contains_any`）生效
+- 逻辑：纯数字（>3位）+ 无逗号 → 生成千分位版本；已有逗号/非数字 → 不变
+
+### L6：Token 成本断言
+
+**背景：** 两个 Agent 答对同一问题，但一个花 700 Token、一个花 1300 Token。质量一样，成本差一倍。MiniMax 关心此指标。
+
+**实现：**
+- `AgentTrajectory` 新增：`prompt_tokens`、`completion_tokens`、`total_tokens`
+- `LLMAgent.run()` 从 API 响应 `response.usage` 中累加 Token
+- `assert_l6_token_cost(traj, max_total_tokens)` — 超限即失败
+- `assert_trajectory()` 支持 `check_token_cost` 开关
+- 报告：控制台和 HTML 展示平均/P95/最大 Token
+- 194 passed（+11 新增测试）
+
+**待完成：** 将 L6 接入 YAML 用例并在真实模型评测中收集 Token 基线。

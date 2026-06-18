@@ -145,6 +145,11 @@ class LLMAgent(AgentProtocol):
                 )
                 api_latency = (time.perf_counter() - t_api_start) * 1000
                 traj.network_latency_ms += api_latency
+                # 累积 Token 用量
+                if hasattr(response, "usage") and response.usage:
+                    traj.prompt_tokens += response.usage.prompt_tokens or 0
+                    traj.completion_tokens += response.usage.completion_tokens or 0
+                    traj.total_tokens += response.usage.total_tokens or 0
             except Exception as e:
                 traj.set_final_answer(f"LLM 调用失败：{e}")
                 return traj

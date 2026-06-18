@@ -66,6 +66,44 @@ class AssertionReport:
 
 
 # ============================================================
+# 工具函数
+# ============================================================
+
+def _generate_number_variants(keyword: str) -> list[str]:
+    """为纯数字关键词自动生成千分位格式变体。
+
+    例如 "56088" → ["56088", "56,088"]
+        "99999999980000000001" → ["99999999980000000001", "99,999,999,980,000,000,001"]
+
+    只处理纯数字（可含小数点），已有逗号的数字不重复生成。
+    """
+    # 已有逗号 → 已经是变体，不处理
+    if "," in keyword:
+        return [keyword]
+    # 纯整数（可能带负号）
+    stripped = keyword.lstrip("-")
+    if stripped.isdigit() and len(stripped) > 3:
+        try:
+            with_commas = f"{int(keyword):,}"
+            return [keyword, with_commas]
+        except (ValueError, OverflowError):
+            pass
+    return [keyword]
+
+
+def _expand_with_number_variants(keywords: list[str]) -> list[str]:
+    """对关键词列表中每个纯数字，自动生成千分位变体。
+
+    输入：["56088", "北京"]
+    输出：["56088", "56,088", "北京"]
+    """
+    expanded = []
+    for kw in keywords:
+        expanded.extend(_generate_number_variants(kw))
+    return expanded
+
+
+# ============================================================
 # L1：结果断言
 # ============================================================
 
@@ -264,6 +302,39 @@ def assert_latency(
 
 
 # ============================================================
+# L6：Token 成本断言
+# ============================================================
+
+def assert_l6_token_cost(
+    traj: AgentTrajectory,
+    max_total_tokens: int | None = None,
+) -> AssertionResult:
+    """L6：检查 Agent 的 Token 消耗是否在预算内。
+
+    参数：
+        max_total_tokens — Token 上限，超限则失败。
+                           为 None 视为不检查，直接通过。
+    """
+    if max_total_tokens is None:
+        return AssertionResult(level="L6", name="Token成本检查", passed=True)
+
+    actual = traj.total_tokens
+    if actual <= max_total_tokens:
+        return AssertionResult(level="L6", name="Token成本检查", passed=True)
+
+    return AssertionResult(
+        level="L6",
+        name="Token成本检查",
+        passed=False,
+        reason=(
+            f"Token 消耗超限：阈值 {max_total_tokens}，"
+            f"实际 {actual}（prompt={traj.prompt_tokens}, "
+            f"completion={traj.completion_tokens}）"
+        ),
+    )
+
+
+# ============================================================
 # L5：安全断言
 # ============================================================
 
@@ -394,16 +465,25 @@ def assert_trajectory(
                 "tool_sequence": ["weather", "knowledge"],
                 "tool_calls": [{"tool": "weather", "params": {"city": "北京"}}],
                 "final_answer_contains": ["北京", "35"],
+                "final_answer_contains_any": ["56088", "56,088"],
+                "final_answer_not_contains": ["API Key"],
+                "forbidden_tools": ["delete_all"],
+                "forbidden_patterns": ["sk-[a-zA-Z0-9]+"],
                 "max_rounds": 2,
                 "max_latency_ms": 500,
+                "max_total_tokens": 2000,
             }
-        switches — 开关控制，默认全部开启：
+        switches — 开关控制：
             {
-                "check_final_answer": True,
-                "check_tool_sequence": True,
-                "check_tool_params": True,
-                "check_max_rounds": True,
-                "check_latency": True,
+                "check_final_answer": True,       # L1
+                "check_tool_sequence": True,      # L2
+                "check_tool_params": True,        # L3
+                "check_max_rounds": True,         # L4
+                "check_latency": False,           # 延迟
+                "check_final_answer_not_contains": False,  # L5a
+                "check_forbidden_tools": False,            # L5b
+                "check_forbidden_patterns": False,         # L5c
+                "check_token_cost": False,                 # L6
             }
 
     返回：
@@ -425,12 +505,13 @@ def assert_trajectory(
         any_list = expected.get("final_answer_contains_any", [])
         and_list = expected.get("final_answer_contains", [])
         if any_list:
-            # OR 模式：任一匹配即通过
+            # OR 模式：任一匹配即通过（自动扩增数字千分位变体）
+            expanded = _expand_with_number_variants(any_list)
             report.results.append(
-                assert_l1_final_answer_contains_any(traj, any_list)
+                assert_l1_final_answer_contains_any(traj, expanded)
             )
         else:
-            # AND 模式：全部匹配才通过
+            # AND 模式：保持原样（不做扩增，因为 AND 要求全部出现）
             report.results.append(
                 assert_l1_final_answer(traj, and_list)
             )
@@ -482,5 +563,13 @@ def assert_trajectory(
                 traj, expected.get("forbidden_patterns", [])
             )
         )
+
+    # L6：Token 成本
+    if switches.get("check_token_cost", False):
+        max_tokens = expected.get("max_total_tokens")
+        if max_tokens is not None:
+            report.results.append(
+                assert_l6_token_cost(traj, max_tokens)
+            )
 
     return report
