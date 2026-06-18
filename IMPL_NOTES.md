@@ -705,7 +705,7 @@ git push -u origin main
 python scripts/run_report.py
 
 # LLM Agent（需配置 .env）
-python scripts/run_report.py --agent llm --repeat 3
+python scripts/run_report.py --agent llm --repeat 3  # 早期命令；当前推荐在 v1.1 中显式加 --provider
 
 # 全量 pytest
 pytest tests/ -v
@@ -729,19 +729,21 @@ pytest tests/ -v
    | security (3) | SEC-001, SEC-002, SEC-006 |
    | error (2) | ERROR-001, ERROR-003 |
 
-3. **`.env` 已创建**：用户只需编辑填入 `MINIMAX_API_KEY` 即可
+3. **`.env` 已创建**：用户按供应商填入 `DEEPSEEK_API_KEY` 或 `MINIMAX_API_KEY`
 4. **一键 v1.0 评测命令**：
 
    ```bash
    # 编辑 .env 填入 API Key 后运行：
-   python scripts/run_report.py --agent llm --repeat 3 \
+   python scripts/run_report.py --agent llm --provider deepseek --model deepseek-chat --repeat 3 \
      --ids FUNC-001,FUNC-002,FUNC-003,FUNC-004,FUNC-011,FUNC-017,\
 BOUND-001,BOUND-002,BOUND-010,\
 SEC-001,SEC-002,SEC-006,\
 ERROR-001,ERROR-003
    ```
 
-### DeepSeek 真实评测结果（2026-06-14）
+### DeepSeek 首次真实评测结果（2026-06-14）
+
+> 这是首次 DeepSeek 基线。当前最新双模型结果见后文 v1.1。
 
 **模型:** `deepseek-chat` | **42 次执行** | **总耗时:** ~5 分钟
 
@@ -787,7 +789,7 @@ FUNC-001, FUNC-002, FUNC-003, SEC-001, SEC-002, SEC-006
 ### 待验证
 
 - [x] GitHub Actions 状态（2026-06-14 确认：全部通过）
-- [x] 填入 API Key 后运行真实评测（DeepSeek, 21/42 通过）
+- [x] 填入 API Key 后运行真实评测（首次 DeepSeek, 21/42 通过）
 - [x] 分析 LLMAgent 在各用例上的 pass/fail 分布
 - [x] 校准 P95 延迟基线（7.16s）
 
@@ -817,19 +819,19 @@ FUNC-001, FUNC-002, FUNC-003, SEC-001, SEC-002, SEC-006
 - `assert_l6_token_cost(traj, max_total_tokens)` — 超限即失败
 - `assert_trajectory()` 支持 `check_token_cost` 开关
 - 报告：控制台和 HTML 展示平均/P95/最大 Token
-- 194 passed（+11 新增测试）
+- 当时 194 passed（+11 新增测试）；当前 provider 修复后为 197 passed
 
-**待完成：** 将 L6 接入 YAML 用例并在真实模型评测中收集 Token 基线。
+**当前状态：** L6 已接入断言入口并在真实模型报告中收集 Token 基线；YAML 用例尚未默认启用 Token 阈值。
 
 ---
 
 ## v1.1：双模型横向对比 + 三类失败归因
 
-**日期：** 2026-06-14
+**日期：** 2026-06-19
 
 ### Provider 多 Key 选择修复 🐛
 
-**问题：** `.env` 同时配置 DeepSeek 和 MiniMax Key 时，LLMAgent 优先读取 `MINIMAX_API_KEY`，导致用 MiniMax Key 请求 DeepSeek → 400 bad_request_error。
+**问题：** `.env` 同时配置 DeepSeek 和 MiniMax Key 时，LLMAgent 优先读取 `MINIMAX_API_KEY`，导致用 MiniMax Key 请求 DeepSeek → 400 bad_request_error / 401 authentication failure。这不是 DeepSeek 限流；真正限流通常应表现为 429 或明确的 rate limit 信息。
 
 **修复：** 新增 `provider` 参数（auto/minimax/deepseek/openai），根据 provider 选择对应的 Key 和 base-url。`--provider auto` 自动从 base-url/model 名称推断。
 

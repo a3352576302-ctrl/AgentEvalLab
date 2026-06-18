@@ -13,7 +13,7 @@
 | 传统软件测试 | AgentEvalLab |
 |-------------|-------------|
 | 只看输入/输出 | 检查完整工具调用轨迹 |
-| 单一 pass/fail | L1-L5 五层独立断言 |
+| 单一 pass/fail | L1-L6 多层独立断言（L6 为可选 Token 成本） |
 | 测试数据写死在代码 | YAML 驱动，测试与逻辑解耦 |
 | 测确定性逻辑 | 同时测结果正确性 + 过程合规性 |
 
@@ -78,8 +78,8 @@ SEC-001,SEC-002,SEC-006,\
 ERROR-001,ERROR-003
 ```
 
-> **DeepSeek 实测 (2026-06-14):** 24/42 (57.1%), P95=7.19s, 安全 9/9
-> **MiniMax M2 实测 (2026-06-14):** 27/42 (64.3%), P95=5.95s, 安全 7/9
+> **DeepSeek 实测 (2026-06-19):** 24/42 (57.1%), P95=7.19s, 安全 9/9
+> **MiniMax M2 实测 (2026-06-19):** 27/42 (64.3%), P95=5.95s, 安全 7/9
 
 如需横向对比 MiniMax：
 
@@ -106,7 +106,7 @@ AgentEvalLab/
 │   ├── trajectory.py          # 轨迹数据结构（ToolCall/AgentTrajectory）
 │   ├── agent.py               # AgentProtocol + RuleBasedAgent
 │   ├── llm_agent.py           # LLMAgent 适配器（OpenAI 兼容 API）
-│   ├── assertions.py          # L1-L5 五层断言引擎
+│   ├── assertions.py          # L1-L6 多层断言引擎
 │   ├── runner.py              # YAML 加载 + 用例执行 + 稳定性评测
 │   ├── fault_injector.py      # 6 种故障注入（装饰器实现）
 │   └── reporter.py            # 控制台 + HTML 报告 + 稳定性指标
@@ -151,6 +151,7 @@ YAML 测试用例
        ↓                   L3 参数断言
    Trajectory              L4 轮次断言
        ↓                   L5 安全断言
+       ↓                   L6 Token 成本断言（可选）
    Reporter（控制台摘要）
 ```
 
@@ -176,7 +177,7 @@ Agent 执行模型：
 
 ---
 
-## 五层断言体系
+## 多层断言体系
 
 | 层级 | 名称 | 检查内容 | 开关 |
 |------|------|---------|------|
@@ -185,6 +186,7 @@ Agent 执行模型：
 | L3 | 参数断言 | 传给工具的参数正确（含模糊匹配） | `check_tool_params` |
 | L4 | 轮次断言 | 调用轮次在限制内 | `check_max_rounds` |
 | L5 | 安全断言 | 禁止内容/工具/敏感模式检测 | `check_final_answer_not_contains` 等 |
+| L6 | Token 成本 | 总 Token 是否超出预算 | `check_token_cost` |
 
 **关键设计：最终答案正确不等于 Agent 行为正确。** 如果工具选错、参数传错、调用顺序错误，L2-L4 会标记失败，避免 Agent"蒙对答案"。L5 对拒答场景智能放行，避免误判安全回复。
 
@@ -255,7 +257,7 @@ with fault_context("weather", "timeout", delay=3.0):
 
 ## 已知限制
 
-1. **DeepSeek 评测已完成**（v1.0, 2026-06-14），安全测试集通过率 100%，P95=7.16s。
+1. **双模型真实评测已完成**（2026-06-19）：DeepSeek 24/42、P95=7.19s、安全 9/9；MiniMax M2 27/42、P95=5.95s、安全 7/9。
 2. **工具数量有限**（3 个），适用于演示框架设计，生产环境可扩展。
 3. **知识库为静态字典**，无检索/向量化环节；匹配策略可进一步优化。
 4. **多工具串联通过率偏低**（FUNC-004 0/3），LLM 在工具链完整性上有改善空间。
@@ -273,8 +275,9 @@ with fault_context("weather", "timeout", delay=3.0):
 | v0.4 | GitHub Actions CI + JUnit XML ✅ |
 | v0.5 | 安全断言(L5) + LLMAgent 适配器 + CLI 参数 + 稳定性评测 ✅ |
 | v0.5.6 | Bug 修复：FC 消息顺序、安全误判、端到端延迟 | ✅ |
-| v1.1 | 双模型横向对比 + Provider修复 + 三类失败归因 | ✅ ← 当前 |
-| v1.0 | DeepSeek/MiniMax 真实评测 + Token成本层(L6) | ✅ |
+| v0.5.7 | 数字自动变体 + Token 成本层(L6) | ✅ |
+| v1.0 | DeepSeek 真实模型评测就绪 | ✅ |
+| v1.1 | 双模型横向对比 + Provider 修复 + 三类失败归因 | ✅ ← 当前 |
 
 ---
 
