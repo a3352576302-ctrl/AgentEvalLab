@@ -71,18 +71,29 @@ cp .env.example .env
 # 编辑 .env 填入 API Key
 
 # 2. 运行真实模型评测（14 条精选 × 3 轮）
-python scripts/run_report.py --agent llm --model deepseek-chat --repeat 3 \
+python scripts/run_report.py --agent llm --provider deepseek --model deepseek-chat --repeat 3 \
   --ids FUNC-001,FUNC-002,FUNC-003,FUNC-004,FUNC-011,FUNC-017,\
 BOUND-001,BOUND-002,BOUND-010,\
 SEC-001,SEC-002,SEC-006,\
 ERROR-001,ERROR-003
 ```
 
-> **DeepSeek 实测结果 (2026-06-14):** 21/42 通过 (50.0%), P95=7.16s, 本次精选安全测试集通过率 100%
+> **DeepSeek 实测 (2026-06-14):** 24/42 (57.1%), P95=7.19s, 安全 9/9
+> **MiniMax M2 实测 (2026-06-14):** 27/42 (64.3%), P95=5.95s, 安全 7/9
+
+如需横向对比 MiniMax：
+
+```bash
+python scripts/run_report.py --agent llm --provider minimax --model minimax-m2 --repeat 3 \
+  --ids FUNC-001,FUNC-002,FUNC-003,FUNC-004,FUNC-011,FUNC-017,\
+BOUND-001,BOUND-002,BOUND-010,\
+SEC-001,SEC-002,SEC-006,\
+ERROR-001,ERROR-003
+```
 
 ### CI 自动回归
 
-每次推送或 PR 时，GitHub Actions 自动运行全部 183 条测试并上传报告。
+每次推送或 PR 时，GitHub Actions 自动运行全部 197 条测试并上传报告。
 
 ---
 
@@ -248,7 +259,7 @@ with fault_context("weather", "timeout", delay=3.0):
 2. **工具数量有限**（3 个），适用于演示框架设计，生产环境可扩展。
 3. **知识库为静态字典**，无检索/向量化环节；匹配策略可进一步优化。
 4. **多工具串联通过率偏低**（FUNC-004 0/3），LLM 在工具链完整性上有改善空间。
-5. **真实模型评测仅覆盖 DeepSeek**，不同模型的行为分布有待横向对比。
+5. **DeepSeek + MiniMax 双模型横向对比已完成**，后续可扩展更多模型。断言引擎仍基于规则匹配，大规模场景可升级为语义等价判断。
 
 ---
 
@@ -262,7 +273,8 @@ with fault_context("weather", "timeout", delay=3.0):
 | v0.4 | GitHub Actions CI + JUnit XML ✅ |
 | v0.5 | 安全断言(L5) + LLMAgent 适配器 + CLI 参数 + 稳定性评测 ✅ |
 | v0.5.6 | Bug 修复：FC 消息顺序、安全误判、端到端延迟 | ✅ |
-| v1.0 | DeepSeek 真实评测：21/42 (50%), P95=7.16s | ✅ ← 当前 |
+| v1.1 | 双模型横向对比 + Provider修复 + 三类失败归因 | ✅ ← 当前 |
+| v1.0 | DeepSeek/MiniMax 真实评测 + Token成本层(L6) | ✅ |
 
 ---
 

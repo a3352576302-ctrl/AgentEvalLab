@@ -10,8 +10,8 @@ agentevallab/llm_agent.py — LLM Agent 适配器（v0.5）
     trajectory = agent.run("北京天气怎么样？")
 
 环境变量：
-    MINIMAX_API_KEY  / OPENAI_API_KEY   — API 密钥
-    MINIMAX_BASE_URL / OPENAI_BASE_URL  — API 端点（可选）
+    MINIMAX_API_KEY / DEEPSEEK_API_KEY / OPENAI_API_KEY   — API 密钥
+    MINIMAX_BASE_URL / DEEPSEEK_BASE_URL / OPENAI_BASE_URL — API 端点（可选）
 """
 from __future__ import annotations
 
@@ -23,6 +23,56 @@ from typing import Any
 from agentevallab.agent import AgentProtocol
 from agentevallab.trajectory import ToolCall, ToolResult, AgentTrajectory
 from agentevallab.tools import TOOL_REGISTRY
+
+
+PROVIDER_CONFIG = {
+    "minimax": {
+        "api_key_envs": ("MINIMAX_API_KEY",),
+        "base_url_envs": ("MINIMAX_BASE_URL",),
+        "default_base_url": "https://api.minimax.chat/v1",
+    },
+    "deepseek": {
+        # DEEPSEEK_API_KEY is preferred. OPENAI_API_KEY is kept as a
+        # compatibility fallback because early project docs used it for DeepSeek.
+        "api_key_envs": ("DEEPSEEK_API_KEY", "OPENAI_API_KEY"),
+        "base_url_envs": ("DEEPSEEK_BASE_URL", "OPENAI_BASE_URL"),
+        "default_base_url": "https://api.deepseek.com/v1",
+    },
+    "openai": {
+        "api_key_envs": ("OPENAI_API_KEY",),
+        "base_url_envs": ("OPENAI_BASE_URL",),
+        "default_base_url": "https://api.openai.com/v1",
+    },
+}
+
+
+def _first_env(names: tuple[str, ...]) -> str:
+    for name in names:
+        value = os.environ.get(name)
+        if value:
+            return value
+    return ""
+
+
+def _infer_provider(provider: str, base_url: str | None, model: str) -> str:
+    """Resolve provider from explicit input, endpoint, or model name."""
+    if provider != "auto":
+        if provider not in PROVIDER_CONFIG:
+            raise ValueError(
+                f"未知 provider: {provider}，可选: auto/minimax/deepseek/openai"
+            )
+        return provider
+
+    signal = f"{base_url or ''} {model or ''}".lower()
+    if "deepseek" in signal:
+        return "deepseek"
+    if "minimax" in signal:
+        return "minimax"
+    if "openai" in signal or "gpt-" in signal:
+        return "openai"
+
+    # Backward-compatible default for earlier MiniMax-oriented usage.
+    return "minimax"
 
 
 # ============================================================
@@ -72,6 +122,7 @@ class LLMAgent(AgentProtocol):
         api_key  — API 密钥，默认从 MINIMAX_API_KEY / OPENAI_API_KEY 读取
         base_url — API 端点，默认 https://api.minimax.chat/v1
         model    — 模型名称，默认 minimax-m2
+        provider — 供应商：auto/minimax/deepseek/openai，默认 auto
         max_rounds — 最大工具调用轮次，默认 10
     """
 
@@ -90,19 +141,16 @@ class LLMAgent(AgentProtocol):
         api_key: str | None = None,
         base_url: str | None = None,
         model: str = "minimax-m2",
+        provider: str = "auto",
         max_rounds: int = 10,
     ):
-        self.api_key = (
-            api_key
-            or os.environ.get("MINIMAX_API_KEY")
-            or os.environ.get("OPENAI_API_KEY")
-            or ""
-        )
+        self.provider = _infer_provider(provider, base_url, model)
+        config = PROVIDER_CONFIG[self.provider]
+        self.api_key = api_key or _first_env(config["api_key_envs"])
         self.base_url = (
             base_url
-            or os.environ.get("MINIMAX_BASE_URL")
-            or os.environ.get("OPENAI_BASE_URL")
-            or "https://api.minimax.chat/v1"
+            or _first_env(config["base_url_envs"])
+            or config["default_base_url"]
         )
         self.model = model
         self.max_rounds = max_rounds

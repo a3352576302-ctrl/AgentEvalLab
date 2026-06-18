@@ -93,6 +93,12 @@ def main():
         help="LLM 模型名称 (如 deepseek-chat, minimax-m2, gpt-4o)"
     )
     parser.add_argument(
+        "--provider",
+        choices=["auto", "minimax", "deepseek", "openai"],
+        default="auto",
+        help="LLM 供应商，用于选择对应 API Key/base-url (默认: auto)"
+    )
+    parser.add_argument(
         "--base-url", type=str, default=None,
         help="API 端点 URL (如 https://api.deepseek.com/v1)"
     )
@@ -119,8 +125,9 @@ def main():
             kwargs["model"] = args.model
         if args.base_url:
             kwargs["base_url"] = args.base_url
+        kwargs["provider"] = args.provider
         agent = LLMAgent(**kwargs)
-        agent_label = f"LLMAgent ({args.model or agent.model})"
+        agent_label = f"LLMAgent ({agent.provider}/{args.model or agent.model})"
     else:
         agent = RuleBasedAgent()
         agent_label = "RuleBasedAgent"

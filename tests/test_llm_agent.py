@@ -38,6 +38,31 @@ class TestLLMAgentInterface:
         agent = LLMAgent()
         assert agent.api_key == "sk-minimax"
 
+    def test_显式deepseek_provider不误用minimax_key(self, monkeypatch):
+        monkeypatch.setenv("MINIMAX_API_KEY", "sk-minimax")
+        monkeypatch.setenv("OPENAI_API_KEY", "sk-deepseek")
+        agent = LLMAgent(provider="deepseek", model="deepseek-chat")
+        assert agent.provider == "deepseek"
+        assert agent.api_key == "sk-deepseek"
+        assert agent.base_url == "https://api.deepseek.com/v1"
+
+    def test_base_url自动推断deepseek_provider(self, monkeypatch):
+        monkeypatch.setenv("MINIMAX_API_KEY", "sk-minimax")
+        monkeypatch.setenv("OPENAI_API_KEY", "sk-deepseek")
+        agent = LLMAgent(
+            model="deepseek-chat",
+            base_url="https://api.deepseek.com/v1",
+        )
+        assert agent.provider == "deepseek"
+        assert agent.api_key == "sk-deepseek"
+
+    def test_显式minimax_provider读取minimax_key(self, monkeypatch):
+        monkeypatch.setenv("MINIMAX_API_KEY", "sk-minimax")
+        monkeypatch.setenv("OPENAI_API_KEY", "sk-deepseek")
+        agent = LLMAgent(provider="minimax", model="minimax-m2")
+        assert agent.provider == "minimax"
+        assert agent.api_key == "sk-minimax"
+
     def test_max_rounds可配置(self):
         agent = LLMAgent(api_key="", max_rounds=5)
         assert agent.max_rounds == 5
