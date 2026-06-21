@@ -373,6 +373,23 @@ tr:hover {{ background:#f9fafb; }}
                      f'<td style="font-weight:bold">{count}</td></tr>')
         html += '</table></div>'
 
+    # 模型对比（如果提供了 compare_run）
+    if compare_run:
+        html += '<div class="card"><h2>📊 模型对比</h2><table>'
+        html += '<tr><th>指标</th><th>当前运行</th><th>对比运行</th></tr>'
+        cur_provider = f"{_html_escape(provider or '')} / {_html_escape(model or '')}"
+        cmp = compare_run
+        cmp_provider = f"{_html_escape(cmp.get('provider', '') or '')} / {_html_escape(cmp.get('model', '') or '')}"
+        html += f'<tr><td>模型</td><td><strong>{cur_provider}</strong></td><td><strong>{cmp_provider}</strong></td></tr>'
+        html += f'<tr><td>总用例</td><td>{summary["total"]}</td><td>{cmp.get("total_cases", "?")}</td></tr>'
+        html += f'<tr><td>通过率</td><td style="color:{rate_color};font-weight:bold">{rate}%</td>'
+        cmp_rate = cmp.get("pass_rate", "?")
+        cmp_color = "#22c55e" if (isinstance(cmp_rate, (int, float)) and cmp_rate >= 80) else ("#f59e0b" if (isinstance(cmp_rate, (int, float)) and cmp_rate >= 50) else "#ef4444")
+        html += f'<td style="color:{cmp_color};font-weight:bold">{cmp_rate}{"%" if isinstance(cmp_rate, (int, float)) else ""}</td></tr>'
+        html += f'<tr><td>通过</td><td>{summary["passed"]}</td><td>{cmp.get("passed", "?")}</td></tr>'
+        html += f'<tr><td>失败</td><td>{summary["failed"]}</td><td>{cmp.get("failed", "?")}</td></tr>'
+        html += '</table></div>'
+
     # 分类统计
     if summary["by_category"]:
         html += '<div class="card"><h2>📂 分类统计</h2><table>'

@@ -102,16 +102,21 @@ def classify_error(case_result: CaseResult) -> list[str]:
     if case_result.passed:
         return labels
 
-    # 1. 非断言异常（执行崩溃、YAML 加载失败等）
-    if case_result.error:
-        error_lower = case_result.error.lower()
+    # 1. 检查 provider 错误（同时检查 error 字段和 final_answer）
+    error_text = case_result.error or ""
+    if not error_text and case_result.trajectory:
+        fa = case_result.trajectory.final_answer
+        if "LLM 调用失败" in fa or "API Key" in fa:
+            error_text = fa
+
+    if error_text:
+        error_lower = error_text.lower()
         # 检查 provider 错误
         for pattern, label in _PROVIDER_ERROR_PATTERNS:
             if pattern.lower() in error_lower:
                 labels.append(label)
                 break
         else:
-            # 检查 "LLM 调用失败" 中的错误码
             if "llm 调用失败" in error_lower or "api key" in error_lower:
                 if "401" in error_lower or "402" in error_lower or "403" in error_lower:
                     labels.append("PROVIDER_AUTH_ERROR")

@@ -214,6 +214,43 @@ class TestBatchClassification:
         assert counts["TOOL_PARAM_MISMATCH"] == 1
 
 
+class TestProviderErrorFromFinalAnswer:
+    """Provider 错误出现在 final_answer 中时也能正确归类"""
+
+    def test_LLM调用失败中的401归因为认证错误(self):
+        r = CaseResult(
+            case_id="T", case_name="t", category="functional", passed=False,
+            trajectory=AgentTrajectory(
+                user_input="test",
+                final_answer="LLM 调用失败：Error code: 401 - {'error': 'invalid api key'}",
+            ),
+        )
+        labels = classify_error(r)
+        assert "PROVIDER_AUTH_ERROR" in labels
+
+    def test_LLM调用失败中的429归因为限流(self):
+        r = CaseResult(
+            case_id="T", case_name="t", category="functional", passed=False,
+            trajectory=AgentTrajectory(
+                user_input="test",
+                final_answer="LLM 调用失败：Error code: 429 rate limit exceeded",
+            ),
+        )
+        labels = classify_error(r)
+        assert "PROVIDER_RATE_LIMIT" in labels
+
+    def test_LLM调用失败无特定错误码归因为网络错误(self):
+        r = CaseResult(
+            case_id="T", case_name="t", category="functional", passed=False,
+            trajectory=AgentTrajectory(
+                user_input="test",
+                final_answer="LLM 调用失败：Connection refused",
+            ),
+        )
+        labels = classify_error(r)
+        assert any(l.startswith("PROVIDER") for l in labels)
+
+
 class TestDescriptions:
     """标签说明"""
 

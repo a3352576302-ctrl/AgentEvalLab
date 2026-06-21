@@ -134,3 +134,44 @@
 - RuleBasedAgent 关键词匹配需要输入里有关键词（SEC-008/010 的输入调优）
 
 **下一步：** 阶段 6 — 文档更新 + 最终验证
+
+---
+
+## 2026-06-21：P0 闭环修复 ✅
+
+**修复的"未接入主流程"问题：**
+
+1. **run_report.py 接入 run_store：**
+   - 新增 `--save-run`：保存 reports/runs/{run_id}.json
+   - 新增 `--run-id`：指定运行 ID
+   - 新增 `--resume RUN_ID`：跳过已完成用例，续跑
+   - 新增 `--compare-run RUN_ID`：加载历史运行对比
+
+2. **reporter.py provider/model 传入：**
+   - `build_html_report()` 的 provider/model 从 CLI 传入
+   - 新增"框架测试通过率 vs 模型任务完成率"双指标卡片
+   - 新增 `compare_run` 对比表（provider/model/通过率/通过/失败）
+
+3. **Provider 错误归因断层修复：**
+   - `error_classifier.py`：同时检查 case_result.error 和 trajectory.final_answer
+   - LLMAgent 把错误写入 final_answer 后，error_classifier 能从 "LLM 调用失败" 中识别 401/429/400/timeout
+   - 新增 3 条 Provider→error_classifier 联动测试
+
+4. **Retry 测试补全：**
+   - 429 重试 ✅
+   - 500 重试 ✅
+   - Timeout 重试 ✅
+   - 401 不重试 ✅
+   - 400 不重试 ✅
+   - 402 不重试 ✅
+   - max_retries 生效 ✅
+
+**验证：**
+- 245 passed (+10 新测试)
+- `--save-run` 生成 run JSON ✅
+- `--help` 显示所有新参数 ✅
+- HTML 报告显示 provider + 双指标 ✅
+
+**生成的 run JSON 位置：** reports/runs/{run_id}.json
+
+**下一步：** 真实 API 评测（需要 API Key）

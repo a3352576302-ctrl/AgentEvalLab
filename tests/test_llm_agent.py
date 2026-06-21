@@ -205,3 +205,134 @@ class TestLLMAgentWithMock:
         assert has_non_dict_before_tool, (
             f"消息顺序错误: tool 之前应有 assistant 消息，roles={roles}"
         )
+
+
+class TestLLMAgentRetry:
+    """LLMAgent retry 行为测试"""
+
+    @pytest.fixture
+    def agent_with_retry(self):
+        return LLMAgent(api_key="sk-mock", model="mock-model", max_retries=2)
+
+    def test_429限流时重试(self, agent_with_retry):
+        """429 应触发重试"""
+        call_count = [0]
+
+        def create_side_effect(*args, **kwargs):
+            call_count[0] += 1
+            raise Exception("429 Too Many Requests - rate limit exceeded")
+
+        with patch(
+            "openai.resources.chat.completions.Completions.create",
+            side_effect=create_side_effect,
+        ), patch("time.sleep", return_value=None):  # 跳过 sleep
+            traj = agent_with_retry.run("测试")
+
+        # max_retries=2 → 1原始 + 2重试 = 3次
+        assert call_count[0] == 3
+        assert "LLM 调用失败" in traj.final_answer
+
+    def test_500服务端错误时重试(self, agent_with_retry):
+        """500 应触发重试"""
+        call_count = [0]
+
+        def create_side_effect(*args, **kwargs):
+            call_count[0] += 1
+            if call_count[0] < 2:
+                raise Exception("500 Internal Server Error")
+            # 第二次成功
+            msg = MagicMock()
+            msg.content = "北京今天晴，35°C。"
+            msg.tool_calls = None
+            return MagicMock(choices=[MagicMock(message=msg)])
+
+        with patch(
+            "openai.resources.chat.completions.Completions.create",
+            side_effect=create_side_effect,
+        ), patch("time.sleep", return_value=None):
+            traj = agent_with_retry.run("北京天气怎么样？")
+
+        assert "35°C" in traj.final_answer
+
+    def test_401不重试(self, agent_with_retry):
+        """401 认证错误不应重试"""
+        call_count = [0]
+
+        def create_side_effect(*args, **kwargs):
+            call_count[0] += 1
+            raise Exception("401 Unauthorized - invalid_api_key")
+
+        with patch(
+            "openai.resources.chat.completions.Completions.create",
+            side_effect=create_side_effect,
+        ), patch("time.sleep", return_value=None):
+            traj = agent_with_retry.run("测试")
+
+        # 不应重试，只调1次
+        assert call_count[0] == 1
+        assert "LLM 调用失败" in traj.final_answer
+
+    def test_400不重试(self, agent_with_retry):
+        """400 请求错误不应重试"""
+        call_count = [0]
+
+        def create_side_effect(*args, **kwargs):
+            call_count[0] += 1
+            raise Exception("400 Bad Request")
+
+        with patch(
+            "openai.resources.chat.completions.Completions.create",
+            side_effect=create_side_effect,
+        ), patch("time.sleep", return_value=None):
+            traj = agent_with_retry.run("测试")
+
+        assert call_count[0] == 1
+
+    def test_402余额不足不重试(self, agent_with_retry):
+        """402 余额不足不应重试"""
+        call_count = [0]
+
+        def create_side_effect(*args, **kwargs):
+            call_count[0] += 1
+            raise Exception("402 insufficient_balance_error")
+
+        with patch(
+            "openai.resources.chat.completions.Completions.create",
+            side_effect=create_side_effect,
+        ), patch("time.sleep", return_value=None):
+            traj = agent_with_retry.run("测试")
+
+        assert call_count[0] == 1
+
+    def test_timeout时重试(self, agent_with_retry):
+        """Timeout 应触发重试"""
+        call_count = [0]
+
+        def create_side_effect(*args, **kwargs):
+            call_count[0] += 1
+            raise Exception("Connection timed out")
+
+        with patch(
+            "openai.resources.chat.completions.Completions.create",
+            side_effect=create_side_effect,
+        ), patch("time.sleep", return_value=None):
+            traj = agent_with_retry.run("测试")
+
+        assert call_count[0] == 3  # max_retries=2
+
+    def test_max_retries为0时不重试(self):
+        """max_retries=0 → 不重试"""
+        agent = LLMAgent(api_key="sk-mock", model="mock-model", max_retries=0)
+        call_count = [0]
+
+        def create_side_effect(*args, **kwargs):
+            call_count[0] += 1
+            raise Exception("500 server error")
+
+        with patch(
+            "openai.resources.chat.completions.Completions.create",
+            side_effect=create_side_effect,
+        ), patch("time.sleep", return_value=None):
+            traj = agent.run("测试")
+
+        assert call_count[0] == 1

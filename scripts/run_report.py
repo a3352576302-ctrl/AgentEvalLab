@@ -49,6 +49,13 @@ from agentevallab.reporter import (
     generate_summary,
     format_duration,
 )
+from agentevallab.run_store import (
+    RunRecord,
+    save_run,
+    load_run,
+    get_completed_case_ids,
+    _generate_run_id,
+)
 import glob
 
 # 路径配置
@@ -102,6 +109,22 @@ def main():
         "--base-url", type=str, default=None,
         help="API 端点 URL (如 https://api.deepseek.com/v1)"
     )
+    parser.add_argument(
+        "--save-run", action="store_true",
+        help="保存运行结果到 reports/runs/{run_id}.json"
+    )
+    parser.add_argument(
+        "--run-id", type=str, default=None,
+        help="指定 run_id（默认自动生成）"
+    )
+    parser.add_argument(
+        "--resume", type=str, default=None, metavar="RUN_ID",
+        help="从已有运行续跑，跳过已完成的用例"
+    )
+    parser.add_argument(
+        "--compare-run", type=str, default=None, metavar="RUN_ID",
+        help="在报告中对比另一个运行的结果"
+    )
     args = parser.parse_args()
 
     # JUnit 模式：直接走 pytest
@@ -136,6 +159,15 @@ def main():
     if args.repeat > 1:
         print(f"重复次数: {args.repeat} (稳定性评测模式)")
 
+    # 续跑：获取已完成用例
+    completed_ids: set = set()
+    run_id = args.run_id or _generate_run_id()
+    if args.resume:
+        run_id = args.resume
+        completed_ids = get_completed_case_ids(run_id, REPORT_DIR)
+        if completed_ids:
+            print(f"续跑模式: 已有 {len(completed_ids)} 条完成用例，将跳过")
+
     # 加载所有 YAML 用例
     search_path = os.path.join(args.case_dir, "**/*.yaml")
     yaml_files = sorted(glob.glob(search_path, recursive=True))
@@ -159,6 +191,14 @@ def main():
             print(f"未找到匹配的用例 ID: {args.ids}")
             return
         print(f"筛选后: {len(cases)} 条用例 (IDs: {sorted(id_set)})")
+
+    # resume 过滤
+    if completed_ids:
+        cases = [c for c in cases if c["id"] not in completed_ids]
+        if not cases:
+            print("所有用例已在之前的运行中完成。")
+            return
+        print(f"续跑跳过 {len(completed_ids)} 条，剩余: {len(cases)} 条")
 
     print(f"加载了 {len(cases)} 条用例")
 
@@ -204,11 +244,41 @@ def main():
         if args.repeat > 1:
             _print_stability_details(stability)
 
+    # 保存 run JSON
+    if args.save_run:
+        provider_name = args.provider if args.agent == "llm" else "rule"
+        model_name = args.model or ""
+        record = RunRecord.from_case_results(
+            results_for_report,
+            provider=provider_name,
+            model=model_name,
+            run_id=run_id,
+        )
+        run_path = save_run(record, reports_dir=REPORT_DIR)
+        print(f"运行记录已保存: {run_path}")
+
+    # 加载对比 run
+    compare_data = None
+    if args.compare_run:
+        compare_data = load_run(args.compare_run, reports_dir=REPORT_DIR)
+        if compare_data:
+            print(f"已加载对比运行: {args.compare_run}")
+        else:
+            print(f"警告: 未找到对比运行 {args.compare_run}")
+
     # HTML 报告
     if not args.console:
         os.makedirs(REPORT_DIR, exist_ok=True)
         html_path = os.path.join(REPORT_DIR, "report.html")
-        html = build_html_report(results_for_report, title=title)
+        provider_name = args.provider if args.agent == "llm" else "rule"
+        model_name = args.model or ""
+        html = build_html_report(
+            results_for_report,
+            title=title,
+            compare_run=compare_data,
+            provider=provider_name,
+            model=model_name,
+        )
         with open(html_path, "w", encoding="utf-8") as f:
             f.write(html)
         print(f"\nHTML 报告已生成: {html_path}")
