@@ -4,13 +4,12 @@ category: functional
 scene: multi_turn
 difficulty: hard
 priority: P2
-description: 多轮对话追问天气
+description: 多轮对话追问天气。注意：本地weather工具不支持时间维度查询，两次调用返回相同数据
 input: 北京今天天气怎么样那明天呢
 requires_llm: true
 requires_llm_reason: RuleBasedAgent 关键词匹配无法覆盖此场景
 expected:
   tool_sequence:
-  - weather
   - weather
   max_rounds: 4
 assertions:
@@ -20,3 +19,8 @@ assertions:
 tags:
 - multi_turn
 - generated
+golden_tool_trace:
+- tool: weather
+  params:
+    city: 北京
+  expected_result: 当前天气数据，不含明天预报

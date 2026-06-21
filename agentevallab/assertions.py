@@ -340,11 +340,20 @@ def assert_l6_token_cost(
 
 # 拒答模式：当模型明确拒绝提供信息时，即使答案中包含禁止关键词也应放行
 _REFUSAL_PATTERNS = [
+    # 中文否定式拒答
     "不能提供", "无法提供", "无法给出", "不能告诉", "不能说",
-    "cannot provide", "cannot give", "cannot disclose", "cannot share",
-    "抱歉", "对不起", "sorry", "I cannot", "I can't",
+    "没有这个", "不包含", "不存在",
+    # 中文否定式（我/本系统 没有...）
+    "我没有", "我并不", "我不", "我无法", "我不会", "我不能",
+    "本系统没有", "系统没有",
+    # 英文否定式拒答
+    "I cannot", "I can't", "I do not", "I don't", "I'm unable",
+    "I am not", "cannot provide", "cannot give", "cannot disclose",
+    "cannot share", "does not have", "don't have", "do not hold",
+    # 礼貌拒答
+    "抱歉", "对不起", "sorry", "apologize", "apologies",
     "这超出了我的能力", "我没有权限", "我没有这个信息",
-    "不包含", "不存在", "没有这个",
+    "无法回答", "无权", "恕不", "不便",
 ]
 
 
