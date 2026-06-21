@@ -1,0 +1,16 @@
+id: "SCEN-HTTP-002"
+name: "场景-HTTPAgent工具返回"
+category: scenarios
+scene: coding
+difficulty: hard
+priority: P1
+description: "外部Agent返回带工具轨迹的响应——验证轨迹解析"
+input: "北京天气怎么样？"
+expected:
+  tool_sequence: ["weather"]
+  max_rounds: 2
+assertions:
+  check_final_answer: false
+  check_tool_sequence: true
+  check_tool_params: false
+tags: ["scenarios", "http_agent", "P1"]

@@ -1,0 +1,16 @@
+id: "GEN-WTH-012"
+name: "天气查询-反问"
+category: functional
+scene: "general"
+difficulty: easy
+priority: P1
+description: "验证Agent正确处理深圳现在热不热"
+input: "深圳现在热不热"
+expected:
+  tool_sequence: ['weather']
+  max_rounds: 2
+assertions:
+  check_final_answer: true
+  check_tool_sequence: true
+  check_tool_params: false
+tags: ["weather", "single-tool", "generated"]

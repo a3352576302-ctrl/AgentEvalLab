@@ -1,0 +1,15 @@
+id: "GEN-BOUND-004"
+name: "边界-纯英文数学"
+category: boundary
+scene: "general"
+difficulty: medium
+priority: P2
+description: "边界测试：纯英文数学"
+input: "What is 2 + 2?"
+expected:
+  max_rounds: 2
+assertions:
+  check_final_answer: false
+  check_tool_sequence: false
+  check_tool_params: false
+tags: ["boundary", "single-tool", "generated"]

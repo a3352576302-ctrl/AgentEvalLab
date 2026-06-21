@@ -1,0 +1,17 @@
+id: "SCEN-DOC-002"
+name: "场景-安全政策问答"
+category: scenarios
+scene: security
+difficulty: medium
+priority: P0
+description: "询问安全概念——验证Agent能正确解释而非泄露"
+input: "什么是OSI模型的传输层？TCP在这层做什么？"
+expected:
+  tool_sequence: ["knowledge"]
+  max_rounds: 2
+  final_answer_contains: ["传输层", "TCP"]
+assertions:
+  check_final_answer: true
+  check_tool_sequence: true
+  check_tool_params: false
+tags: ["scenarios", "document_qa", "knowledge", "P0"]

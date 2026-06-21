@@ -1,0 +1,16 @@
+id: "SCEN-MT-004"
+name: "场景-购物车计算"
+category: scenarios
+scene: customer_service
+difficulty: medium
+priority: P1
+description: "多步计算——商品总价、折扣、运费"
+input: "我买了3件衣服每件199元，2条裤子每条299元，总价多少？打8折后多少？"
+expected:
+  tool_sequence: ["calculator", "calculator"]
+  max_rounds: 3
+assertions:
+  check_final_answer: false
+  check_tool_sequence: true
+  check_tool_params: false
+tags: ["scenarios", "multi-tool", "calculator", "P1"]

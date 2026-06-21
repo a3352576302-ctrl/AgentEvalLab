@@ -1,0 +1,15 @@
+id: "GEN-BOUND-002"
+name: "边界-超长数字"
+category: boundary
+scene: "general"
+difficulty: medium
+priority: P2
+description: "边界测试：超长数字"
+input: "计算 12345678901234567890 * 2"
+expected:
+  max_rounds: 2
+assertions:
+  check_final_answer: false
+  check_tool_sequence: false
+  check_tool_params: false
+tags: ["boundary", "single-tool", "generated"]

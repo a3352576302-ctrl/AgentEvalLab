@@ -1,0 +1,16 @@
+id: "GEN-KNOW-001"
+name: "知识查询-OSI模型"
+category: functional
+scene: "general"
+difficulty: medium
+priority: P1
+description: "验证Agent正确处理OSI模型的知识查询"
+input: "OSI七层模型有哪些"
+expected:
+  tool_sequence: ['knowledge']
+  max_rounds: 2
+assertions:
+  check_final_answer: false
+  check_tool_sequence: true
+  check_tool_params: false
+tags: ["knowledge", "single-tool", "generated"]

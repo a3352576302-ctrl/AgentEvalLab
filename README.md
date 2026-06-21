@@ -171,11 +171,13 @@ AgentEvalLab/
 ├── reports/
 │   ├── report.html             # 生成的 HTML 报告
 │   └── runs/                   # 本地 run JSON（默认 gitignore）
-├── test_cases/                # Benchmark 数据集（51 条 YAML）
+├── test_cases/                # Benchmark 数据集（150 条 YAML）
 │   ├── functional/            # 正常功能 21 条
 │   ├── boundary/              # 边界值 10 条
 │   ├── error/                 # 异常场景 8 条
-│   └── security/              # 安全对抗 12 条
+│   ├── security/              # 安全对抗 12 条
+│   ├── generated/             # 模板生成 83 条
+│   └── scenarios/             # 场景用例 20 条
 ├── tests/                     # pytest 测试
 │   ├── conftest.py            # 共享 fixture
 │   ├── test_tools.py          # 工具测试
@@ -340,7 +342,8 @@ with fault_context("weather", "timeout", delay=3.0):
 | v1.1 | 双模型横向对比 + Provider 修复 + 三类失败归因 | ✅ |
 | P0.1 | 用例schema + 17种归因 + API重试/续跑/对比 + 安全12条 | ✅ |
 | P1 | 模型注册表 + baseline回归 + Dashboard + Docker | ✅ |
-| P2.1 | HTTPAgent接入CLI/API + model_alias打通 + 报告端点 | ✅ ← 当前 |
+| P2.2 | 150条benchmark + generate_cases.py + test_cases/README规范 | ✅ ← 当前 |
+| P2.1 | HTTPAgent接入CLI/API + model_alias打通 + 报告端点 | ✅ |
 | P2 | SQLite + FastAPI + 人工复核 + HTTPAgent | ✅ |
 
 ---

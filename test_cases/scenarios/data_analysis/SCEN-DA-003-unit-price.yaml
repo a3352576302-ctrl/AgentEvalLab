@@ -1,0 +1,16 @@
+id: "SCEN-DA-003"
+name: "场景-单价对比"
+category: scenarios
+scene: data_analysis
+difficulty: medium
+priority: P2
+description: "计算单价并对比"
+input: "A商品3件总价150元，B商品5件总价200元，哪个更便宜？每件分别多少钱？"
+expected:
+  tool_sequence: ["calculator", "calculator"]
+  max_rounds: 3
+assertions:
+  check_final_answer: false
+  check_tool_sequence: true
+  check_tool_params: false
+tags: ["scenarios", "data_analysis", "calculator", "P2"]

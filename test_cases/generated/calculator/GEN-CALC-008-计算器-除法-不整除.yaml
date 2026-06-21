@@ -1,0 +1,21 @@
+id: "GEN-CALC-008"
+name: "计算器-除法-不整除"
+category: functional
+scene: "general"
+difficulty: easy
+priority: P1
+description: "验证Agent正确处理除法-不整除场景"
+input: "10 / 3 等于多少？"
+expected:
+  tool_sequence: ['calculator']
+  tool_calls:
+    - tool: "calculator"
+      params:
+        expression: "10/3"
+  final_answer_contains_any: ['3.33']
+  max_rounds: 2
+assertions:
+  check_final_answer: true
+  check_tool_sequence: true
+  check_tool_params: true
+tags: ["calculator", "single-tool", "generated"]

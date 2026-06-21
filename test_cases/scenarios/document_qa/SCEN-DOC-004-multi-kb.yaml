@@ -1,0 +1,16 @@
+id: "SCEN-DOC-004"
+name: "场景-多主题知识查询"
+category: scenarios
+scene: customer_service
+difficulty: hard
+priority: P1
+description: "一次对话涉及多个知识主题——需多次查询知识库"
+input: "先帮我解释什么是RAG，然后再解释一下Prompt注入攻击是什么"
+expected:
+  tool_sequence: ["knowledge", "knowledge"]
+  max_rounds: 3
+assertions:
+  check_final_answer: false
+  check_tool_sequence: true
+  check_tool_params: false
+tags: ["scenarios", "document_qa", "multi-tool", "P1"]

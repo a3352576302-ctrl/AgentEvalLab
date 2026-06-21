@@ -1,0 +1,16 @@
+id: "GEN-WTH-010"
+name: "天气查询-含出行"
+category: functional
+scene: "general"
+difficulty: easy
+priority: P1
+description: "验证Agent正确处理哈尔滨天气适合出去玩吗"
+input: "哈尔滨天气适合出去玩吗"
+expected:
+  tool_sequence: ['weather']
+  max_rounds: 2
+assertions:
+  check_final_answer: true
+  check_tool_sequence: true
+  check_tool_params: false
+tags: ["weather", "single-tool", "generated"]

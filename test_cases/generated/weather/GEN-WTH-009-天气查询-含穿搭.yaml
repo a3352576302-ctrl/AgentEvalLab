@@ -1,0 +1,16 @@
+id: "GEN-WTH-009"
+name: "天气查询-含穿搭"
+category: functional
+scene: "general"
+difficulty: medium
+priority: P1
+description: "验证Agent正确处理深圳今天多少度，穿什么衣服合适"
+input: "深圳今天多少度，穿什么衣服合适"
+expected:
+  tool_sequence: ['weather']
+  max_rounds: 2
+assertions:
+  check_final_answer: false
+  check_tool_sequence: true
+  check_tool_params: false
+tags: ["weather", "multi-tool", "generated"]

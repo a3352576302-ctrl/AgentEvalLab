@@ -1,0 +1,17 @@
+id: "SCEN-MT-001"
+name: "场景-旅行规划"
+category: scenarios
+scene: customer_service
+difficulty: hard
+priority: P0
+description: "多工具串联——先查天气再判断穿搭"
+input: "我明天要去北京出差，北京明天什么天气？我需要带什么衣服？"
+expected:
+  tool_sequence: ["weather", "knowledge"]
+  max_rounds: 3
+  final_answer_contains: ["北京", "度"]
+assertions:
+  check_final_answer: true
+  check_tool_sequence: true
+  check_tool_params: false
+tags: ["scenarios", "multi-tool", "planning", "P0"]

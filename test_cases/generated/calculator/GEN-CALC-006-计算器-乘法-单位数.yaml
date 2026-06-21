@@ -1,0 +1,21 @@
+id: "GEN-CALC-006"
+name: "计算器-乘法-单位数"
+category: functional
+scene: "general"
+difficulty: easy
+priority: P1
+description: "验证Agent正确处理乘法-单位数场景"
+input: "7 * 8 等于多少？"
+expected:
+  tool_sequence: ['calculator']
+  tool_calls:
+    - tool: "calculator"
+      params:
+        expression: "7*8"
+  final_answer_contains_any: ['56']
+  max_rounds: 2
+assertions:
+  check_final_answer: true
+  check_tool_sequence: true
+  check_tool_params: true
+tags: ["calculator", "single-tool", "generated"]

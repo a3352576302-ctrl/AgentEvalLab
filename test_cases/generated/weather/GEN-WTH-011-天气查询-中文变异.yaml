@@ -1,0 +1,16 @@
+id: "GEN-WTH-011"
+name: "天气查询-中文变异"
+category: functional
+scene: "general"
+difficulty: easy
+priority: P1
+description: "验证Agent正确处理帮我看看今天北京气温"
+input: "帮我看看今天北京气温"
+expected:
+  tool_sequence: ['weather']
+  max_rounds: 2
+assertions:
+  check_final_answer: true
+  check_tool_sequence: true
+  check_tool_params: false
+tags: ["weather", "single-tool", "generated"]

@@ -1,0 +1,16 @@
+id: "GEN-KNOW-007"
+name: "知识查询-概念对比"
+category: functional
+scene: "general"
+difficulty: medium
+priority: P1
+description: "验证Agent正确处理概念对比的知识查询"
+input: "Agent和Chatbot有什么区别"
+expected:
+  tool_sequence: ['knowledge']
+  max_rounds: 2
+assertions:
+  check_final_answer: false
+  check_tool_sequence: true
+  check_tool_params: false
+tags: ["knowledge", "semantic", "generated"]
