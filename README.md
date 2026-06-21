@@ -78,6 +78,33 @@ python scripts/run_report.py --html-only --compare-run demo-run
 
 运行记录保存到 `reports/runs/{run_id}.json`。该目录默认不提交到 Git，用于本地保存真实模型评测结果。
 
+### 模型注册表、Baseline 与 Dashboard（P1）
+
+```bash
+# 列出所有已注册模型
+python scripts/run_report.py --list-models
+
+# 从注册表加载模型（替代手动 --provider/--model）
+python scripts/run_report.py --agent llm --model-alias deepseek-chat
+
+# 设置 baseline 并检测退化
+python scripts/run_report.py --html-only --save-run --run-id demo --set-baseline v1
+python scripts/run_report.py --html-only --save-run --run-id demo2 --baseline v1
+
+# 生成 Dashboard（历史运行全貌）
+python scripts/build_dashboard.py
+# 或跑完后自动刷新 Dashboard
+python scripts/run_report.py --html-only --save-run --dashboard
+```
+
+### Docker 一键启动
+
+```bash
+docker build -t agentevallab .
+docker run --rm agentevallab                           # rule 模式 smoke run
+docker run --rm -v ./reports:/app/reports agentevallab  # 报告落盘
+```
+
 ### LLM Agent 评测（v1.0）
 
 ```bash
@@ -302,7 +329,8 @@ with fault_context("weather", "timeout", delay=3.0):
 | v0.5.7 | 数字自动变体 + Token 成本层(L6) | ✅ |
 | v1.0 | DeepSeek 真实模型评测就绪 | ✅ |
 | v1.1 | 双模型横向对比 + Provider 修复 + 三类失败归因 | ✅ |
-| P0.1 | 用例schema + 17种归因 + API重试/续跑/对比 + 安全12条 + 245测试 | ✅ ← 当前 |
+| P0.1 | 用例schema + 17种归因 + API重试/续跑/对比 + 安全12条 | ✅ |
+| P1 | 模型注册表 + baseline回归 + Dashboard + Docker | ✅ ← 当前 |
 
 ---
 
