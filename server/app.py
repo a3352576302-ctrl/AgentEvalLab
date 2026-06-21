@@ -80,7 +80,7 @@ async def get_run_report(run_id: str):
     # 简化版：返回元数据摘要
     return {
         "run_id": run_id,
-        "report_url": f"/runs/{run_id}/results",
+        "report_url": f"/runs/{run_id}/report.html",
         "summary": {
             "total": detail["run"].get("total_cases", 0),
             "passed": detail["run"].get("passed", 0),
@@ -89,6 +89,61 @@ async def get_run_report(run_id: str):
             "created_at": detail["run"].get("created_at", ""),
         },
     }
+
+
+@app.get("/runs/{run_id}/report.html")
+async def get_run_report_html(run_id: str):
+    """返回完整 HTML 报告。"""
+    from fastapi.responses import HTMLResponse
+    from agentevallab.runner import CaseResult
+    from agentevallab.trajectory import AgentTrajectory
+    from agentevallab.reporter import build_html_report
+
+    detail = get_run_results(run_id)
+    if "error" in detail:
+        raise HTTPException(status_code=404, detail=detail["error"])
+
+    # 从 DB 结果重建 CaseResult 列表
+    results = []
+    for c in detail.get("case_results", []):
+        traj = AgentTrajectory(
+            user_input="",
+            final_answer=c.get("final_answer", ""),
+            network_latency_ms=c.get("total_latency_ms", 0) or 0,
+        )
+        traj.prompt_tokens = 0
+        traj.completion_tokens = 0
+        traj.total_tokens = c.get("total_tokens", 0) or 0
+        # 重建 tool_calls
+        for tc in c.get("tool_traces", []):
+            from agentevallab.trajectory import ToolCall, ToolResult
+            res = ToolResult(
+                success=bool(tc.get("success")),
+                data=tc.get("result_json", {}),
+            )
+            call = ToolCall(
+                tool_name=tc.get("tool_name", ""),
+                params=tc.get("params_json", {}),
+                result=res,
+                latency_ms=tc.get("latency_ms", 0),
+            )
+            traj.add_tool_call(call)
+
+        cr = CaseResult(
+            case_id=c.get("case_id", ""),
+            case_name=c.get("case_name", ""),
+            category=c.get("category", ""),
+            passed=bool(c.get("passed")),
+            trajectory=traj,
+            error=c.get("error"),
+        )
+        results.append(cr)
+
+    provider = detail["run"].get("provider", "")
+    model = detail["run"].get("model", "")
+    title = f"AgentEvalLab 报告 ({provider}/{model})"
+    html = build_html_report(results, title=title, provider=provider, model=model)
+    return HTMLResponse(content=html)
 
 
 @app.get("/reviews")
