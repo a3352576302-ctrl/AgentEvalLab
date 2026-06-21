@@ -18,6 +18,7 @@ reports/*.xml
 reports/runs/
 reports/baselines/*.json
 !reports/baselines/.gitkeep
+reports/dashboard.html
 
 # IDE
 .vscode/

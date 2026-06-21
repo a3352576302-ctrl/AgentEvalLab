@@ -58,6 +58,7 @@ from agentevallab.run_store import (
 )
 from agentevallab.model_registry import load_registry, get_model
 from agentevallab.baseline import save_baseline as save_baseline_data, compare_baseline
+from agentevallab.dashboard import build_dashboard
 import glob
 
 # 路径配置
@@ -154,6 +155,10 @@ def main():
     parser.add_argument(
         "--baseline-threshold-token", type=float, default=20,
         help="Token退化阈值，百分比（默认 20）"
+    )
+    parser.add_argument(
+        "--dashboard", action="store_true",
+        help="跑完后自动刷新 reports/dashboard.html"
     )
     args = parser.parse_args()
 
@@ -397,6 +402,14 @@ def main():
         with open(html_path, "w", encoding="utf-8") as f:
             f.write(html)
         print(f"\nHTML 报告已生成: {html_path}")
+
+    # Dashboard 刷新
+    if args.dashboard:
+        dash_html = build_dashboard(runs_dir=REPORT_DIR)
+        dash_path = os.path.join(REPORT_DIR, "dashboard.html")
+        with open(dash_path, "w", encoding="utf-8") as f:
+            f.write(dash_html)
+        print(f"Dashboard 已刷新: {dash_path}")
 
 
 def _print_stability_details(stability: dict) -> None:
