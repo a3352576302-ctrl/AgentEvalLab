@@ -63,6 +63,21 @@ pytest tests/ --junitxml=reports/junit.xml # 直接用 pytest
 # 报告输出到 reports/
 ```
 
+### 运行记录、续跑与模型对比（P0.1）
+
+```bash
+# 保存本次运行的结构化结果
+python scripts/run_report.py --html-only --save-run --run-id demo-run
+
+# 从已有 run 续跑，跳过已完成用例，并合并旧结果 + 新结果
+python scripts/run_report.py --html-only --resume demo-run --save-run
+
+# 在 HTML 报告中对比另一份 run JSON
+python scripts/run_report.py --html-only --compare-run demo-run
+```
+
+运行记录保存到 `reports/runs/{run_id}.json`。该目录默认不提交到 Git，用于本地保存真实模型评测结果。
+
 ### LLM Agent 评测（v1.0）
 
 ```bash
@@ -75,7 +90,8 @@ python scripts/run_report.py --agent llm --provider deepseek --model deepseek-ch
   --ids FUNC-001,FUNC-002,FUNC-003,FUNC-004,FUNC-011,FUNC-017,\
 BOUND-001,BOUND-002,BOUND-010,\
 SEC-001,SEC-002,SEC-006,\
-ERROR-001,ERROR-003
+ERROR-001,ERROR-003 \
+  --save-run --run-id ds-20260621
 ```
 
 > **DeepSeek 实测 (2026-06-19):** 24/42 (57.1%), P95=7.19s, 安全 9/9
@@ -88,12 +104,13 @@ python scripts/run_report.py --agent llm --provider minimax --model minimax-m2 -
   --ids FUNC-001,FUNC-002,FUNC-003,FUNC-004,FUNC-011,FUNC-017,\
 BOUND-001,BOUND-002,BOUND-010,\
 SEC-001,SEC-002,SEC-006,\
-ERROR-001,ERROR-003
+ERROR-001,ERROR-003 \
+  --save-run --run-id mm-20260621 --compare-run ds-20260621
 ```
 
 ### CI 自动回归
 
-每次推送或 PR 时，GitHub Actions 自动运行全部 235 条测试并上传报告。
+每次推送或 PR 时，GitHub Actions 自动运行全部 245 条测试并上传报告。
 
 ---
 
@@ -108,12 +125,16 @@ AgentEvalLab/
 │   ├── llm_agent.py           # LLMAgent 适配器（OpenAI 兼容 API）
 │   ├── assertions.py          # L1-L6 多层断言引擎
 │   ├── runner.py              # YAML 加载 + 用例执行 + 稳定性评测
+│   ├── case_schema.py         # P0.1：YAML 元数据校验 + 默认值填充
+│   ├── error_classifier.py    # P0.1：17 种失败归因分类
+│   ├── run_store.py           # P0.1：run JSON 落盘 + 续跑
 │   ├── fault_injector.py      # 6 种故障注入（装饰器实现）
 │   └── reporter.py            # 控制台 + HTML 报告 + 稳定性指标
 ├── scripts/
 │   └── run_report.py           # 一键报告生成
 ├── reports/
-│   └── report.html             # 生成的 HTML 报告
+│   ├── report.html             # 生成的 HTML 报告
+│   └── runs/                   # 本地 run JSON（默认 gitignore）
 ├── test_cases/                # Benchmark 数据集（51 条 YAML）
 │   ├── functional/            # 正常功能 21 条
 │   ├── boundary/              # 边界值 10 条
@@ -281,7 +302,7 @@ with fault_context("weather", "timeout", delay=3.0):
 | v0.5.7 | 数字自动变体 + Token 成本层(L6) | ✅ |
 | v1.0 | DeepSeek 真实模型评测就绪 | ✅ |
 | v1.1 | 双模型横向对比 + Provider 修复 + 三类失败归因 | ✅ |
-| P0.1 | 用例schema + 17种归因 + API重试/续跑 + 安全12条 + 235测试 | ✅ ← 当前 |
+| P0.1 | 用例schema + 17种归因 + API重试/续跑/对比 + 安全12条 + 245测试 | ✅ ← 当前 |
 
 ---
 
