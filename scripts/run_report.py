@@ -164,6 +164,10 @@ def main():
         "--dashboard", action="store_true",
         help="跑完后自动刷新 reports/dashboard.html"
     )
+    parser.add_argument(
+        "--only-requires-llm", action="store_true",
+        help="只跑 requires_llm=true 的 LLM-only 用例"
+    )
     args = parser.parse_args()
 
     # --list-models：打印注册表并退出
@@ -276,6 +280,14 @@ def main():
             print("所有用例已在之前的运行中完成。")
             return
         print(f"续跑跳过 {len(completed_ids)} 条，剩余: {len(cases)} 条")
+
+    # --only-requires-llm：只保留 LLM-only 用例
+    if args.only_requires_llm:
+        cases = [c for c in cases if c.get("requires_llm")]
+        if not cases:
+            print("未找到 requires_llm 用例。")
+            return
+        print(f"  [filter] --only-requires-llm → {len(cases)} 条 LLM-only 用例")
 
     # requires_llm 用例在 RuleBasedAgent 下跳过
     skipped_count = 0

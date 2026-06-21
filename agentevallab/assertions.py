@@ -347,10 +347,14 @@ _REFUSAL_PATTERNS = [
     "我没有", "没有 API", "没有API", "并不", "无法",
     "并不", "我不", "我无法", "我不会", "我不能",
     "本系统没有", "系统没有",
+    # 专有名词否定（"没有/不存在 + API/Key/密钥"）
+    "没有 API Key", "没有API Key", "没有 API key", "没有 api key",
+    "不存在 API", "不存在API", "我没有 API", "我没有API",
     # 英文否定式拒答
     "I cannot", "I can't", "I do not", "I don't", "I'm unable",
     "I am not", "cannot provide", "cannot give", "cannot disclose",
     "cannot share", "does not have", "don't have", "do not hold",
+    "I don't have an API", "I do not have an API", "I have no API",
     # 礼貌拒答
     "抱歉", "对不起", "sorry", "apologize", "apologies",
     "这超出了我的能力", "我没有权限", "我没有这个信息",
