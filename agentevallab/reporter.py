@@ -13,6 +13,7 @@ from datetime import datetime
 from typing import Any
 
 from agentevallab.runner import CaseResult
+from agentevallab.error_classifier import classify_error, classify_results, get_taxonomy_description
 
 
 # ============================================================
@@ -233,23 +234,40 @@ def _progress_bar(pct: float, width: int = 30) -> str:
 def build_html_report(
     results: list[CaseResult],
     title: str = "AgentEvalLab 测试报告",
+    compare_run: dict | None = None,
+    provider: str = "",
+    model: str = "",
 ) -> str:
     """生成独立的 HTML 报告文件。
 
     包含：
-        - 汇总仪表盘（通过率、延迟、分类）
-        - 失败用例详情（断言原因 + 轨迹）
+        - 汇总仪表盘（通过率、延迟、Token、分类）
+        - 模型任务完成率（仅 L1 结果层）
+        - 失败归因 Top N
+        - 失败用例详情（断言原因 + 归因标签 + trace）
+        - 可选：模型对比（compare_run）
         - 无外部依赖，所有 CSS 内联
 
     参数：
-        results — CaseResult 列表
-        title   — 报告标题
-
-    返回：
-        完整的 HTML 字符串，可直接写入 .html 文件
+        results      — CaseResult 列表
+        title        — 报告标题
+        compare_run  — 对比运行数据（load_run 返回的 dict）
+        provider     — LLM provider 名称
+        model        — 模型名称
     """
     summary = generate_summary(results)
+    attribution = classify_results(results)
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    # 模型任务完成率（仅 L1）
+    l1_total = len([r for r in results if r.report and any(
+        a.name.startswith("最终答案") for a in r.report.results)])
+    l1_passed = len([r for r in results if r.report and any(
+        a.name.startswith("最终答案") and a.passed for a in r.report.results)])
+    if l1_total == 0:
+        l1_total = summary["total"]
+        l1_passed = summary["passed"]
+    task_rate = (l1_passed / l1_total * 100) if l1_total > 0 else 0
 
     # 通过率颜色
     rate = summary["pass_rate"]
@@ -324,6 +342,37 @@ tr:hover {{ background:#f9fafb; }}
 </div>
 """
 
+    # 模型信息 + 任务完成率
+    if provider or model:
+        html += '<div class="card"><h2>🤖 模型信息</h2>'
+        html += f'<p style="font-size:14px">Provider: <strong>{_html_escape(provider)}</strong>'
+        if model:
+            html += f' ｜ Model: <strong>{_html_escape(model)}</strong>'
+        html += '</p>'
+        html += '<div class="stats" style="margin-top:12px">'
+        html += (f'<div class="stat"><div class="stat-num" style="color:#1e3a5f">'
+                 f'{summary["pass_rate"]}%</div>'
+                 f'<div class="stat-label">框架测试通过率（L1-L6）</div></div>')
+        html += (f'<div class="stat"><div class="stat-num" style="color:#7c3aed">'
+                 f'{task_rate:.1f}%</div>'
+                 f'<div class="stat-label">模型任务完成率（仅L1）</div></div>')
+        html += '</div>'
+        html += ('<p style="font-size:12px;color:#6b7280;margin-top:8px">'
+                 '框架测试通过率 = 全部断言通过的比例。模型任务完成率 = 仅看最终答案是否包含预期内容。'
+                 '两者差异越大，说明过程性错误越多（工具用错/参数传错/多轮兜圈）。</p>')
+        html += '</div>'
+
+    # 失败归因
+    if attribution:
+        html += '<div class="card"><h2>🔍 失败归因 Top 5</h2><table>'
+        html += '<tr><th>归因类型</th><th>说明</th><th>次数</th></tr>'
+        for label, count in list(attribution.items())[:5]:
+            desc = get_taxonomy_description(label)
+            html += (f'<tr><td><span class="tag tag-fail">{_html_escape(label)}</span></td>'
+                     f'<td>{_html_escape(desc)}</td>'
+                     f'<td style="font-weight:bold">{count}</td></tr>')
+        html += '</table></div>'
+
     # 分类统计
     if summary["by_category"]:
         html += '<div class="card"><h2>📂 分类统计</h2><table>'
@@ -344,26 +393,56 @@ tr:hover {{ background:#f9fafb; }}
     if summary["failures"]:
         html += '<div class="card"><h2>❌ 失败用例详情</h2>'
         for f in summary["failures"]:
+            # 归因标签
+            labels = classify_error(f)
             html += f'<div style="margin-bottom:12px;padding:12px;background:#fef2f2;border-radius:6px">'
             html += f'<strong>[{_html_escape(f.case_id)}] {_html_escape(f.case_name)}</strong>'
             html += f' <span class="tag tag-fail">{_html_escape(f.category)}</span>'
+            if labels:
+                label_tags = " ".join(
+                    f'<span class="tag tag-warn">{_html_escape(l)}</span>'
+                    for l in labels
+                )
+                html += f' <span style="margin-left:4px">{label_tags}</span>'
 
             if f.error:
-                html += f'<p style="margin-top:8px;color:#dc2626">⚠ 异常: {_html_escape(f.error)}</p>'
+                html += f'<p style="margin-top:8px;color:#dc2626">⚠ 异常: {_html_escape(f.error[:300])}</p>'
             elif f.report:
                 for r in f.report.results:
                     if not r.passed:
                         html += (
                             f'<p style="margin-top:4px;font-size:13px;color:#991b1b">'
                             f'[{_html_escape(r.level)}] {_html_escape(r.name)}: '
-                            f'{_html_escape(r.reason)}</p>'
+                            f'{_html_escape(r.reason[:200])}</p>'
                         )
 
-            # 工具轨迹
+            # 完整工具调用 trace
             if f.trajectory and f.trajectory.tool_calls:
-                tools = " → ".join(f.trajectory.tool_names)
-                dur = format_duration(f.trajectory.total_latency_ms)
-                html += f'<p style="margin-top:4px;font-size:12px;color:#6b7280">🔧 轨迹: {tools} ({dur})</p>'
+                html += ('<details style="margin-top:8px;font-size:12px">'
+                         '<summary style="cursor:pointer;color:#6b7280">'
+                         f'🔧 工具调用 Trace ({len(f.trajectory.tool_calls)} 次, '
+                         f'{format_duration(f.trajectory.total_latency_ms)})</summary>')
+                for idx, tc in enumerate(f.trajectory.tool_calls):
+                    status = "✅" if tc.result.success else "❌"
+                    params_str = str(tc.params)[:150]
+                    html += (
+                        f'<div style="margin:4px 0;padding:6px;background:#fff;'
+                        f'border-radius:4px;font-family:monospace;font-size:11px">'
+                        f'{status} <strong>{_html_escape(tc.tool_name)}</strong>'
+                        f'({format_duration(tc.latency_ms or 0)}) '
+                        f'<span style="color:#6b7280">{_html_escape(params_str)}</span>'
+                        f'</div>'
+                    )
+                # Token 信息
+                if f.trajectory.total_tokens > 0:
+                    html += (
+                        f'<div style="margin-top:4px;font-size:11px;color:#9ca3af">'
+                        f'Token: {f.trajectory.total_tokens} '
+                        f'(prompt={f.trajectory.prompt_tokens}, '
+                        f'completion={f.trajectory.completion_tokens})'
+                        f'</div>'
+                    )
+                html += '</details>'
 
             html += '</div>'
         html += '</div>'

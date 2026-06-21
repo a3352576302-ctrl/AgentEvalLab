@@ -86,3 +86,26 @@
 - `max_retries` 参数加了但忘记 `self.max_retries = max_retries` → AttributeError
 
 **下一步：** 阶段 4 — HTML 报告增强（归因 + trace + 模型对比）
+
+---
+
+## 2026-06-21：阶段 4 — HTML 报告增强 ✅
+
+**做了什么：**
+- 新增"框架测试通过率 vs 模型任务完成率"双指标展示
+- 新增失败归因 Top 5 卡片
+- 失败用例详情：每条的归因标签 + 完整 tool trace（可展开）+ Token 信息
+- `build_html_report` 支持 `compare_run`、`provider`、`model` 参数
+
+**为什么这样做：**
+- 面试官看报告时，要能一眼区分"框架测试结果"和"模型真实能力"
+- 归因标签让失败不只是一个 fail，而是能解释原因
+- trace 展开让调试时不用翻终端日志
+
+**改了哪些文件：**
+- 修改：agentevallab/reporter.py（build_html_report + import error_classifier）
+
+**测试结果：**
+- 230 passed，HTML 报告正常生成
+
+**下一步：** 阶段 5 — 安全用例扩展
