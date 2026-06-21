@@ -41,7 +41,7 @@ except ImportError:
 
 from agentevallab.agent import RuleBasedAgent
 from agentevallab.llm_agent import LLMAgent
-from agentevallab.runner import load_and_run_all, run_case, run_case_multi, load_yaml_case
+from agentevallab.runner import CaseResult, load_and_run_all, run_case, run_case_multi, load_yaml_case
 from agentevallab.reporter import (
     print_report,
     build_html_report,
@@ -238,18 +238,44 @@ def main():
         print(f"\n完成：{passed}/{len(results_for_report)} 通过\n")
         title = f"AgentEvalLab v0.5 测试报告 ({agent_label})"
 
+    # 续跑：合并旧结果 + 新结果
+    old_case_ids: set = set()
+    if args.resume and completed_ids:
+        old_case_ids = completed_ids - {r.case_id for r in results_for_report}
+        # 从旧 run JSON 中加载已完成的 case（用于报告展示，不是 CaseResult 对象）
+        old_run_data = load_run(run_id, reports_dir=REPORT_DIR)
+
     # 控制台报告
     if not args.html_only:
         print_report(results_for_report)
         if args.repeat > 1:
             _print_stability_details(stability)
 
-    # 保存 run JSON
+    # 保存 run JSON — 续跑时合并旧结果
     if args.save_run:
         provider_name = args.provider if args.agent == "llm" else "rule"
         model_name = args.model or ""
+        # 合并旧结果 + 新结果
+        all_case_results = list(results_for_report)
+        if args.resume and old_case_ids:
+            if old_run_data:
+                old_count = len(old_run_data.get("results", []))
+                print(f"续跑合并: {old_count} 条旧结果 + {len(results_for_report)} 条新结果")
+                # 旧结果的 case_id 不在新结果中 → 保留为占位 summary
+                for old_r in old_run_data.get("results", []):
+                    if old_r.get("case_id") not in {
+                        r.case_id for r in results_for_report
+                    }:
+                        # 用简化的 CaseResult 表示旧结果
+                        all_case_results.append(CaseResult(
+                            case_id=old_r.get("case_id", ""),
+                            case_name=old_r.get("case_name", ""),
+                            category=old_r.get("category", "unknown"),
+                            passed=old_r.get("passed", True),
+                        ))
+
         record = RunRecord.from_case_results(
-            results_for_report,
+            all_case_results,
             provider=provider_name,
             model=model_name,
             run_id=run_id,
