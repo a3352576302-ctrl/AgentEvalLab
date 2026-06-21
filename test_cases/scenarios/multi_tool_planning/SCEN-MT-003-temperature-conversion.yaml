@@ -1,6 +1,6 @@
 id: SCEN-MT-003
 name: 场景-温度转换与穿搭
-category: scenarios
+category: functional
 scene: customer_service
 difficulty: hard
 priority: P1

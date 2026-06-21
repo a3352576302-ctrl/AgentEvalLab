@@ -1,19 +1,27 @@
-id: "SCEN-DA-005"
-name: "场景-复利计算"
-category: scenarios
+id: SCEN-DA-005
+name: 场景-复利计算
+category: functional
 scene: data_analysis
 difficulty: hard
 priority: P1
-description: "复利计算——需要多步运算"
-input: "存入10000元，年利率5%，3年后复利本息和是多少？公式：本金*(1+利率)^年数"
+description: 复利计算——需要多步运算
+input: 存入10000元，年利率5%，3年后复利本息和是多少？公式：本金*(1+利率)^年数
 expected:
-  tool_sequence: ["calculator"]
+  tool_sequence:
+  - calculator
   max_rounds: 2
-  final_answer_contains_any: ["11576", "11576.25"]
+  final_answer_contains_any:
+  - '11576'
+  - '11576.25'
 assertions:
   check_final_answer: true
   check_tool_sequence: true
   check_tool_params: false
 requires_llm: true
-requires_llm_reason: "需要语义理解提取公式"
-tags: ["scenarios", "data_analysis", "calculator", "semantic", "P1"]
+requires_llm_reason: 需要语义理解提取公式
+tags:
+- scenarios
+- data_analysis
+- calculator
+- semantic
+- P1

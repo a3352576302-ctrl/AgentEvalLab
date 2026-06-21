@@ -5,13 +5,14 @@ scene: multi_tool_planning
 difficulty: hard
 priority: P1
 description: 多工具规划校验计算
-input: 100除以3商是多少余数是多少
+input: 100除以3商是多少余数是多少再用商乘以3加余数验证
 requires_llm: true
 requires_llm_reason: RuleBasedAgent 关键词匹配无法覆盖此场景
 expected:
   tool_sequence:
   - calculator
-  max_rounds: 3
+  - calculator
+  max_rounds: 4
 assertions:
   check_final_answer: false
   check_tool_sequence: true

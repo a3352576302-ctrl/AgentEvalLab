@@ -5,7 +5,7 @@ scene: multi_tool_planning
 difficulty: hard
 priority: P1
 description: 多工具规划混合任务-天气计算
-input: 今天北京温度如果是35度那明天下降5度后是多少穿什么
+input: 今天北京温度如果是35度那明天下降5度后是多少再查一下穿什么
 requires_llm: true
 requires_llm_reason: RuleBasedAgent 关键词匹配无法覆盖此场景
 expected:

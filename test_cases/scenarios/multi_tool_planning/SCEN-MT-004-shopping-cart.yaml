@@ -1,6 +1,6 @@
 id: SCEN-MT-004
 name: 场景-购物车计算
-category: scenarios
+category: functional
 scene: customer_service
 difficulty: medium
 priority: P1

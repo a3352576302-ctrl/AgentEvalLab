@@ -1,6 +1,6 @@
 id: SCEN-TURN-002
 name: 场景-链式计算追问
-category: scenarios
+category: functional
 scene: data_analysis
 difficulty: medium
 priority: P1

@@ -5,13 +5,14 @@ scene: multi_tool_planning
 difficulty: hard
 priority: P1
 description: 多工具规划统计数据-多变体
-input: 1到10所有奇数的和是多少
+input: 1到10所有奇数的和是多少再算所有偶数的和
 requires_llm: true
 requires_llm_reason: RuleBasedAgent 关键词匹配无法覆盖此场景
 expected:
   tool_sequence:
   - calculator
-  max_rounds: 3
+  - calculator
+  max_rounds: 4
 assertions:
   check_final_answer: false
   check_tool_sequence: true

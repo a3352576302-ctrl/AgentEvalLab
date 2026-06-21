@@ -1,6 +1,6 @@
 id: SCEN-DA-002
 name: 场景-增长率计算
-category: scenarios
+category: functional
 scene: data_analysis
 difficulty: medium
 priority: P1

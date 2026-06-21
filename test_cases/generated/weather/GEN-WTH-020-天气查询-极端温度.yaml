@@ -2,7 +2,7 @@ id: GEN-WTH-020
 name: 天气查询-极端温度
 category: functional
 scene: general
-difficulty: medium
+difficulty: easy
 priority: P1
 description: 验证Agent处理哈尔滨零下30度怎么穿
 input: 哈尔滨零下30度怎么穿
@@ -13,10 +13,10 @@ expected:
   - weather
   max_rounds: 2
 assertions:
-  check_final_answer: false
+  check_final_answer: true
   check_tool_sequence: true
   check_tool_params: false
 tags:
 - weather
-- multi-tool
+- single-tool
 - generated

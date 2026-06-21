@@ -1,6 +1,6 @@
 id: SCEN-DA-001
 name: 场景-数据统计分析
-category: scenarios
+category: functional
 scene: data_analysis
 difficulty: hard
 priority: P1

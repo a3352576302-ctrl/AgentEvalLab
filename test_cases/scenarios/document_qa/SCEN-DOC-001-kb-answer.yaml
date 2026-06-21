@@ -1,6 +1,6 @@
 id: SCEN-DOC-001
 name: 场景-知识库问答
-category: scenarios
+category: functional
 scene: customer_service
 difficulty: medium
 priority: P0

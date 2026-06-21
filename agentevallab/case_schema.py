@@ -52,8 +52,10 @@ _REQUIRED_FIELDS = ["id", "name", "input"]
 
 # 合法值范围（用于警告，不强制）
 _VALID_VALUES: dict[str, list[str]] = {
-    "category": ["functional", "boundary", "error", "security", "unknown"],
-    "scene": ["general", "customer_service", "coding", "search", "data_analysis", "file_ops", "security"],
+    "category": ["functional", "boundary", "error", "security"],
+    "scene": ["general", "customer_service", "coding", "search",
+              "data_analysis", "file_ops", "security",
+              "multi_tool_planning", "rag_document_qa", "http_agent", "multi_turn"],
     "difficulty": ["easy", "medium", "hard", "adversarial"],
     "priority": ["P0", "P1", "P2"],
 }

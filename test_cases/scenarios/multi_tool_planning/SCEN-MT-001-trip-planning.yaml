@@ -1,6 +1,6 @@
 id: SCEN-MT-001
 name: 场景-旅行规划
-category: scenarios
+category: functional
 scene: customer_service
 difficulty: hard
 priority: P0

@@ -5,13 +5,14 @@ scene: multi_tool_planning
 difficulty: hard
 priority: P1
 description: 多工具规划交通费用
-input: 打车起步价14元每公里2.5元15公里多少钱
+input: 打车起步价14元每公里2.5元15公里多少钱如果坐地铁5元能省多少钱
 requires_llm: true
 requires_llm_reason: RuleBasedAgent 关键词匹配无法覆盖此场景
 expected:
   tool_sequence:
   - calculator
-  max_rounds: 3
+  - calculator
+  max_rounds: 4
 assertions:
   check_final_answer: false
   check_tool_sequence: true

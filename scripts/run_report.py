@@ -277,6 +277,15 @@ def main():
             return
         print(f"续跑跳过 {len(completed_ids)} 条，剩余: {len(cases)} 条")
 
+    # requires_llm 用例在 RuleBasedAgent 下跳过
+    skipped_count = 0
+    if isinstance(agent, RuleBasedAgent):
+        llm_cases = [c for c in cases if c.get("requires_llm")]
+        cases = [c for c in cases if not c.get("requires_llm")]
+        if llm_cases:
+            skipped_count = len(llm_cases)
+            print(f"  [skip] {skipped_count} 条 requires_llm 用例已跳过（RuleBasedAgent 不支持）")
+
     print(f"加载了 {len(cases)} 条用例")
 
     # 执行测试
@@ -292,7 +301,8 @@ def main():
             passes = sum(1 for r in results if r.passed)
             print(f"  [{i+1}/{len(cases)}] {case_id}: {passes}/{args.repeat} 通过")
 
-        print(f"\n完成：{sum(1 for r in all_results if r.passed)}/{len(all_results)} 通过\n")
+        skip_msg = f"（+{skipped_count} LLM-only 跳过）" if skipped_count else ""
+        print(f"\n完成：{sum(1 for r in all_results if r.passed)}/{len(all_results)} 通过 {skip_msg}\n")
 
         # 稳定性报告
         stability = compute_stability(multi_results)
@@ -312,7 +322,8 @@ def main():
             print(f"  [{i+1}/{len(cases)}] {status} {result.case_id}: {result.case_name}")
 
         passed = sum(1 for r in results_for_report if r.passed)
-        print(f"\n完成：{passed}/{len(results_for_report)} 通过\n")
+        skip_msg = f"（+{skipped_count} LLM-only 跳过）" if skipped_count else ""
+        print(f"\n完成：{passed}/{len(results_for_report)} 通过 {skip_msg}\n")
         title = f"AgentEvalLab v0.5 测试报告 ({agent_label})"
 
     # 续跑：合并旧结果 + 新结果

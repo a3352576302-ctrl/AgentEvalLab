@@ -1,6 +1,6 @@
 id: SCEN-HTTP-002
 name: 场景-HTTPAgent工具返回
-category: scenarios
+category: functional
 scene: coding
 difficulty: hard
 priority: P1

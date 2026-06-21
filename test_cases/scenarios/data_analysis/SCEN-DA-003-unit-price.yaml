@@ -1,6 +1,6 @@
 id: SCEN-DA-003
 name: 场景-单价对比
-category: scenarios
+category: functional
 scene: data_analysis
 difficulty: medium
 priority: P2

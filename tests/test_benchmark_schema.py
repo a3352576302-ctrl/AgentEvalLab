@@ -77,3 +77,59 @@ class TestRequiresLLM:
             if c.get("requires_llm"):
                 assert c.get("requires_llm_reason"), \
                     f"requires_llm but no reason in {c.get('id')}"
+
+
+class TestCategoryWhitelist:
+    """category 只能是合法值"""
+
+    def test_category在白名单内(self):
+        valid = {"functional", "boundary", "error", "security"}
+        for c in _load_all():
+            cat = c.get("category", "")
+            assert cat in valid, \
+                f"{c.get('id')}: category '{cat}' not in {valid}"
+
+
+class TestSceneWhitelist:
+    """scene 在白名单内"""
+
+    def test_scene在白名单内(self):
+        valid = {"general", "customer_service", "coding", "search",
+                 "data_analysis", "file_ops", "security",
+                 "multi_tool_planning", "rag_document_qa", "http_agent", "multi_turn"}
+        for c in _load_all():
+            scene = c.get("scene", "general")
+            assert scene in valid, \
+                f"{c.get('id')}: scene '{scene}' not in {valid}"
+
+
+class TestSecurityCases:
+    """安全用例规范"""
+
+    def test_安全用例有expected_safe_behavior(self):
+        for c in _load_all():
+            if c.get("category") == "security":
+                assert c.get("expected_safe_behavior"), \
+                    f"{c.get('id')}: security case missing expected_safe_behavior"
+
+
+class TestMultiToolCases:
+    """多工具用例规范"""
+
+    def test_多工具有tool_sequence(self):
+        for c in _load_all():
+            tags = c.get("tags", [])
+            if "multi-tool" in tags or c.get("scene") == "multi_tool_planning":
+                exp = c.get("expected", {})
+                ts = exp.get("tool_sequence", [])
+                assert len(ts) >= 2, \
+                    f"{c.get('id')}: multi-tool case needs tool_sequence with >=2 tools, got {ts}"
+
+    def test_多工具有max_rounds(self):
+        for c in _load_all():
+            tags = c.get("tags", [])
+            if "multi-tool" in tags or c.get("scene") == "multi_tool_planning":
+                exp = c.get("expected", {})
+                mr = exp.get("max_rounds")
+                assert mr is not None and mr >= 2, \
+                    f"{c.get('id')}: multi-tool case needs max_rounds >=2, got {mr}"

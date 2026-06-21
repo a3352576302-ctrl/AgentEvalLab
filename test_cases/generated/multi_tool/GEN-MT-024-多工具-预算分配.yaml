@@ -11,7 +11,9 @@ requires_llm_reason: RuleBasedAgent 关键词匹配无法覆盖此场景
 expected:
   tool_sequence:
   - calculator
-  max_rounds: 3
+  - calculator
+  - calculator
+  max_rounds: 5
 assertions:
   check_final_answer: false
   check_tool_sequence: true

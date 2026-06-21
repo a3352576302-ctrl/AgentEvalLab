@@ -1,19 +1,27 @@
-id: "SCEN-DA-004"
-name: "场景-比例计算"
-category: scenarios
+id: SCEN-DA-004
+name: 场景-比例计算
+category: functional
 scene: data_analysis
 difficulty: medium
 priority: P2
-description: "计算比例和百分比"
-input: "一个班级有25个男生和20个女生，男生占比是多少？写出计算过程"
+description: 计算比例和百分比
+input: 一个班级有25个男生和20个女生，男生占比是多少？写出计算过程
 expected:
-  tool_sequence: ["calculator"]
+  tool_sequence:
+  - calculator
   max_rounds: 2
-  final_answer_contains_any: ["55.6", "55"]
+  final_answer_contains_any:
+  - '55.6'
+  - '55'
 assertions:
   check_final_answer: true
   check_tool_sequence: true
   check_tool_params: false
 requires_llm: true
-requires_llm_reason: "需要文字语义理解提取算式"
-tags: ["scenarios", "data_analysis", "calculator", "semantic", "P2"]
+requires_llm_reason: 需要文字语义理解提取算式
+tags:
+- scenarios
+- data_analysis
+- calculator
+- semantic
+- P2

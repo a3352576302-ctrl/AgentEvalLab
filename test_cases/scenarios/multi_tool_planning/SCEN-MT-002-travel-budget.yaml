@@ -1,6 +1,6 @@
 id: SCEN-MT-002
 name: 场景-旅行预算计算
-category: scenarios
+category: functional
 scene: customer_service
 difficulty: hard
 priority: P0

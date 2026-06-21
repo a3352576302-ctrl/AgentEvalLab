@@ -1,6 +1,6 @@
 id: SCEN-TURN-001
 name: 场景-追问天气
-category: scenarios
+category: functional
 scene: customer_service
 difficulty: medium
 priority: P1
