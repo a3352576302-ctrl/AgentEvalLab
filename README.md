@@ -340,7 +340,8 @@ with fault_context("weather", "timeout", delay=3.0):
 | v1.1 | 双模型横向对比 + Provider 修复 + 三类失败归因 | ✅ |
 | P0.1 | 用例schema + 17种归因 + API重试/续跑/对比 + 安全12条 | ✅ |
 | P1 | 模型注册表 + baseline回归 + Dashboard + Docker | ✅ |
-| P2 | SQLite + FastAPI + 人工复核 + HTTPAgent | ✅ ← 当前 |
+| P2.1 | HTTPAgent接入CLI/API + model_alias打通 + 报告端点 | ✅ ← 当前 |
+| P2 | SQLite + FastAPI + 人工复核 + HTTPAgent | ✅ |
 
 ---
 
