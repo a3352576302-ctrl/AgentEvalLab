@@ -56,6 +56,7 @@ from agentevallab.run_store import (
     get_completed_case_ids,
     _generate_run_id,
 )
+from agentevallab.model_registry import load_registry, get_model
 import glob
 
 # 路径配置
@@ -100,6 +101,14 @@ def main():
         help="LLM 模型名称 (如 deepseek-chat, minimax-m2, gpt-4o)"
     )
     parser.add_argument(
+        "--model-alias", type=str, default=None,
+        help="从 config/models.yaml 注册表加载模型配置"
+    )
+    parser.add_argument(
+        "--list-models", action="store_true",
+        help="列出 config/models.yaml 中所有已注册模型"
+    )
+    parser.add_argument(
         "--provider",
         choices=["auto", "minimax", "deepseek", "openai"],
         default="auto",
@@ -126,6 +135,37 @@ def main():
         help="在报告中对比另一个运行的结果"
     )
     args = parser.parse_args()
+
+    # --list-models：打印注册表并退出
+    if args.list_models:
+        registry = load_registry()
+        if not registry.list_aliases():
+            print("未找到已注册的模型。请检查 config/models.yaml")
+        else:
+            print(f"{'别名':<20} {'Provider':<12} {'Model':<20} {'ToolCall':<10}")
+            print("-" * 65)
+            for alias in registry.list_aliases():
+                cfg = registry.get(alias)
+                print(f"{alias:<20} {cfg.provider:<12} {cfg.model:<20} "
+                      f"{'yes' if cfg.supports_tool_calling else 'no':<10}")
+        return
+
+    # --model-alias：从注册表加载完整配置
+    if args.model_alias:
+        cfg = get_model(args.model_alias)
+        if cfg is None:
+            print(f"错误: 未找到模型别名 '{args.model_alias}'。"
+                  f"可用: {load_registry().list_aliases()}")
+            return
+        # 注册表配置优先级高于命令行默认值
+        if not args.provider or args.provider == "auto":
+            args.provider = cfg.provider
+        if not args.model:
+            args.model = cfg.model
+        if not args.base_url:
+            args.base_url = cfg.default_base_url or None
+        print(f"[model_registry] 已加载: {cfg.alias} "
+              f"(provider={cfg.provider}, model={cfg.model})")
 
     # JUnit 模式：直接走 pytest
     if args.junit:

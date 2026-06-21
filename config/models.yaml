@@ -1,0 +1,46 @@
+# AgentEvalLab 模型注册表
+# 集中管理所有支持的模型配置。
+# 使用 --model-alias <name> 从本表加载完整配置。
+
+models:
+  deepseek-chat:
+    provider: deepseek
+    model: deepseek-chat
+    base_url_env: DEEPSEEK_BASE_URL
+    api_key_env: DEEPSEEK_API_KEY
+    default_base_url: https://api.deepseek.com/v1
+    supports_tool_calling: true
+    supports_json_mode: false
+    supports_vision: false
+    context_window: 64000
+    input_price_per_1m: null
+    output_price_per_1m: null
+    tags: [reasoning, tool_calling]
+
+  minimax-m2:
+    provider: minimax
+    model: minimax-m2
+    base_url_env: MINIMAX_BASE_URL
+    api_key_env: MINIMAX_API_KEY
+    default_base_url: https://api.minimax.chat/v1
+    supports_tool_calling: true
+    supports_json_mode: false
+    supports_vision: false
+    context_window: null
+    input_price_per_1m: null
+    output_price_per_1m: null
+    tags: [agent, tool_calling]
+
+  minimax-m3:
+    provider: minimax
+    model: minimax-m3
+    base_url_env: MINIMAX_BASE_URL
+    api_key_env: MINIMAX_API_KEY
+    default_base_url: https://api.minimax.chat/v1
+    supports_tool_calling: true
+    supports_json_mode: false
+    supports_vision: false
+    context_window: null
+    input_price_per_1m: 0.30
+    output_price_per_1m: 1.20
+    tags: [agent, tool_calling, latest]
