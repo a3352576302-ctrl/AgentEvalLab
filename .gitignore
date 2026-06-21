@@ -15,6 +15,7 @@ htmlcov/
 # 报告（每次运行生成，不纳入版本控制）
 reports/*.html
 reports/*.xml
+reports/runs/
 
 # IDE
 .vscode/
