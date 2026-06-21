@@ -175,3 +175,36 @@
 **生成的 run JSON 位置：** reports/runs/{run_id}.json
 
 **下一步：** 真实 API 评测（需要 API Key）
+
+---
+
+## P0.1 总结
+
+**版本：** P0.1 | **日期：** 2026-06-21 | **测试：** 245 passed | **YAML：** 51 条
+
+**新增文件（7 个）：**
+- agentevallab/case_schema.py
+- agentevallab/error_classifier.py
+- agentevallab/run_store.py
+- tests/test_case_schema.py
+- tests/test_error_classifier.py
+- tests/test_run_store.py
+- test_cases/security/SEC-008 ~ SEC-012（5 条 YAML）
+
+**新增 CLI 参数（4 个）：** --save-run, --run-id, --resume, --compare-run
+
+**关键命令：**
+```bash
+# 跑完整评测并保存
+python scripts/run_report.py --agent llm --provider minimax --model minimax-m2 \
+  --repeat 3 --ids FUNC-001,... --save-run --run-id mm-20260621
+
+# 续跑
+python scripts/run_report.py --agent llm --provider minimax --model minimax-m2 \
+  --repeat 3 --ids FUNC-001,... --save-run --resume mm-20260621
+
+# 双模型对比
+python scripts/run_report.py --agent llm --provider minimax --model minimax-m2 \
+  --repeat 3 --ids FUNC-001,... --save-run --run-id mm-20260621 \
+  --compare-run ds-20260621
+```

@@ -280,7 +280,8 @@ with fault_context("weather", "timeout", delay=3.0):
 | v0.5.6 | Bug 修复：FC 消息顺序、安全误判、端到端延迟 | ✅ |
 | v0.5.7 | 数字自动变体 + Token 成本层(L6) | ✅ |
 | v1.0 | DeepSeek 真实模型评测就绪 | ✅ |
-| v1.1 | 双模型横向对比 + Provider 修复 + 三类失败归因 | ✅ ← 当前 |
+| v1.1 | 双模型横向对比 + Provider 修复 + 三类失败归因 | ✅ |
+| P0.1 | 用例schema + 17种归因 + API重试/续跑 + 安全12条 + 235测试 | ✅ ← 当前 |
 
 ---
 
