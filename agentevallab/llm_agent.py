@@ -54,6 +54,30 @@ def _first_env(names: tuple[str, ...]) -> str:
     return ""
 
 
+def _is_retryable(exception: Exception) -> bool:
+    """判断异常是否可重试。
+
+    可重试：限流(429)、服务端错误(5xx)、网络超时、连接错误
+    不可重试：认证错误(401/403)、请求格式错误(400)、余额不足(402)
+    """
+    msg = str(exception).lower()
+    # 不可重试
+    non_retryable = ["401", "402", "403", "400", "insufficient_balance",
+                     "invalid_api_key", "authentication"]
+    for keyword in non_retryable:
+        if keyword in msg:
+            return False
+    # 可重试
+    retryable = ["429", "500", "502", "503", "504", "timeout", "timed out",
+                 "connection", "rate limit", "rate_limit", "overloaded",
+                 "server error", "internal error", "temporarily"]
+    for keyword in retryable:
+        if keyword in msg:
+            return True
+    # 默认不可重试（保守策略）
+    return False
+
+
 def _infer_provider(provider: str, base_url: str | None, model: str) -> str:
     """Resolve provider from explicit input, endpoint, or model name."""
     if provider != "auto":
@@ -143,6 +167,7 @@ class LLMAgent(AgentProtocol):
         model: str = "minimax-m2",
         provider: str = "auto",
         max_rounds: int = 10,
+        max_retries: int = 3,
     ):
         self.provider = _infer_provider(provider, base_url, model)
         config = PROVIDER_CONFIG[self.provider]
@@ -154,6 +179,7 @@ class LLMAgent(AgentProtocol):
         )
         self.model = model
         self.max_rounds = max_rounds
+        self.max_retries = max_retries
         self.tools_schema = _build_tools_schema()
 
     def run(self, user_input: str) -> AgentTrajectory:
@@ -182,24 +208,36 @@ class LLMAgent(AgentProtocol):
         ]
 
         for _round in range(self.max_rounds):
-            try:
-                t_api_start = time.perf_counter()
-                response = client.chat.completions.create(
-                    model=self.model,
-                    messages=messages,
-                    tools=self.tools_schema,
-                    tool_choice="auto",
-                    temperature=0.1,  # 低温度减少随机性
-                )
-                api_latency = (time.perf_counter() - t_api_start) * 1000
-                traj.network_latency_ms += api_latency
-                # 累积 Token 用量
-                if hasattr(response, "usage") and response.usage:
-                    traj.prompt_tokens += response.usage.prompt_tokens or 0
-                    traj.completion_tokens += response.usage.completion_tokens or 0
-                    traj.total_tokens += response.usage.total_tokens or 0
-            except Exception as e:
-                traj.set_final_answer(f"LLM 调用失败：{e}")
+            # 带指数退避的重试
+            last_error: Exception | None = None
+            for attempt in range(self.max_retries + 1):  # 1 次原始 + N 次重试
+                try:
+                    t_api_start = time.perf_counter()
+                    response = client.chat.completions.create(
+                        model=self.model,
+                        messages=messages,
+                        tools=self.tools_schema,
+                        tool_choice="auto",
+                        temperature=0.1,
+                    )
+                    api_latency = (time.perf_counter() - t_api_start) * 1000
+                    traj.network_latency_ms += api_latency
+                    if hasattr(response, "usage") and response.usage:
+                        traj.prompt_tokens += response.usage.prompt_tokens or 0
+                        traj.completion_tokens += response.usage.completion_tokens or 0
+                        traj.total_tokens += response.usage.total_tokens or 0
+                    last_error = None
+                    break  # 成功，跳出重试循环
+                except Exception as e:
+                    last_error = e
+                    if attempt < self.max_retries and _is_retryable(e):
+                        wait_s = 2 ** attempt  # 1s, 2s, 4s
+                        time.sleep(wait_s)
+                        continue
+                    break  # 不可重试或用完重试次数
+
+            if last_error is not None:
+                traj.set_final_answer(f"LLM 调用失败：{last_error}")
                 return traj
 
             choice = response.choices[0]

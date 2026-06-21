@@ -56,3 +56,33 @@
 - 222 passed (+16)，0 failed
 
 **下一步：** 阶段 3 — 真实 API 稳定性（retry + backoff + run_store）
+
+---
+
+## 2026-06-21：阶段 3 — 真实 API 稳定性 ✅
+
+**做了什么：**
+- `llm_agent.py`：新增 retry + exponential backoff（1s/2s/4s，最多 3 次）
+- `_is_retryable()`：区分可重试（429/5xx/超时/网络）和不可重试（401/402/403/400）
+- `agentevallab/run_store.py`：运行结果 JSON 持久化
+  - `save_run()` / `load_run()` / `list_runs()`
+  - `get_completed_case_ids()`：续跑时跳过已完成用例
+- `tests/test_run_store.py`：8 条测试
+
+**为什么这样做：**
+- API 不可能永远稳定——retry 是生产级调用的底线
+- 不可重试错误（如 401 key 错了）应该立即失败，不浪费时间
+- run JSON 落盘后，阶段 4 的 HTML 对比报告可以直接读取历史数据
+
+**改了哪些文件：**
+- 修改：agentevallab/llm_agent.py（retry + _is_retryable）
+- 新增：agentevallab/run_store.py
+- 新增：tests/test_run_store.py
+
+**测试结果：**
+- 230 passed (+8)，0 failed
+
+**遇到的坑：**
+- `max_retries` 参数加了但忘记 `self.max_retries = max_retries` → AttributeError
+
+**下一步：** 阶段 4 — HTML 报告增强（归因 + trace + 模型对比）
