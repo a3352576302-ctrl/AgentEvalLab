@@ -36,6 +36,8 @@ def submit_run(
     case_ids: list[str] | None = None,
     provider: str = "auto",
     model: str = "",
+    model_alias: str | None = None,
+    endpoint_url: str | None = None,
     repeat: int = 1,
     db_path: str | None = None,
 ) -> dict[str, Any]:
@@ -54,8 +56,21 @@ def submit_run(
     """
     run_id = _generate_run_id()
 
+    # 处理 model_alias
+    if model_alias and not model:
+        from agentevallab.model_registry import get_model
+        cfg = get_model(model_alias)
+        if cfg:
+            provider = cfg.provider
+            model = cfg.model
+
     # 创建 Agent
-    if agent_type == "llm":
+    if agent_type == "http":
+        if not endpoint_url:
+            raise ValueError("HTTP Agent 需要 --endpoint-url")
+        from agentevallab.http_agent import HTTPAgent
+        agent = HTTPAgent(endpoint_url)
+    elif agent_type == "llm":
         agent = LLMAgent(provider=provider, model=model)
     else:
         agent = RuleBasedAgent()

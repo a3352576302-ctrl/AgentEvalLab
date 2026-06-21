@@ -41,6 +41,8 @@ async def create_run(req: SubmitRunRequest):
         case_ids=req.case_ids,
         provider=req.provider,
         model=req.model,
+        model_alias=req.model_alias,
+        endpoint_url=req.endpoint_url,
         repeat=req.repeat,
     )
     return SubmitRunResponse(**result)
@@ -65,6 +67,28 @@ async def get_run_results_endpoint(run_id: str):
     if "error" in detail:
         raise HTTPException(status_code=404, detail=detail["error"])
     return detail
+
+
+@app.get("/runs/{run_id}/report")
+async def get_run_report(run_id: str):
+    """返回运行报告（HTML）。"""
+    detail = get_run_results(run_id)
+    if "error" in detail:
+        raise HTTPException(status_code=404, detail=detail["error"])
+    from agentevallab.reporter import build_html_report
+    # 从数据库结果重建 CaseResult 列表用于报告
+    # 简化版：返回元数据摘要
+    return {
+        "run_id": run_id,
+        "report_url": f"/runs/{run_id}/results",
+        "summary": {
+            "total": detail["run"].get("total_cases", 0),
+            "passed": detail["run"].get("passed", 0),
+            "failed": detail["run"].get("failed", 0),
+            "pass_rate": detail["run"].get("pass_rate", 0),
+            "created_at": detail["run"].get("created_at", ""),
+        },
+    }
 
 
 @app.get("/reviews")

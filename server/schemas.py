@@ -9,11 +9,12 @@ from pydantic import BaseModel, Field
 
 
 class SubmitRunRequest(BaseModel):
-    agent: str = Field(default="rule", description="rule 或 llm")
+    agent: str = Field(default="rule", description="rule / llm / http")
     case_ids: list[str] | None = Field(default=None, description="用例ID列表")
     provider: str = Field(default="auto")
     model: str = Field(default="")
     model_alias: str | None = None
+    endpoint_url: str | None = Field(default=None, description="HTTP Agent 端点")
     repeat: int = Field(default=1, ge=1, le=10)
 
 

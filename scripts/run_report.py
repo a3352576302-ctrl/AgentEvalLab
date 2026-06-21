@@ -71,8 +71,12 @@ def main():
         description="AgentEvalLab — AI Agent 自动化测试报告生成器"
     )
     parser.add_argument(
-        "--agent", choices=["rule", "llm"], default="rule",
-        help="选择 Agent 类型: rule=RuleBasedAgent, llm=LLMAgent (默认: rule)"
+        "--agent", choices=["rule", "llm", "http"], default="rule",
+        help="选择 Agent 类型: rule=RuleBasedAgent, llm=LLMAgent, http=HTTPAgent"
+    )
+    parser.add_argument(
+        "--endpoint-url", type=str, default=None,
+        help="HTTP Agent 端点 URL（--agent http 时必填）"
     )
     parser.add_argument(
         "--repeat", type=int, default=1, metavar="N",
@@ -208,7 +212,14 @@ def main():
         return
 
     # 创建 Agent
-    if args.agent == "llm":
+    if args.agent == "http":
+        if not args.endpoint_url:
+            print("错误: --agent http 需要 --endpoint-url")
+            return
+        from agentevallab.http_agent import HTTPAgent
+        agent = HTTPAgent(args.endpoint_url)
+        agent_label = f"HTTPAgent ({args.endpoint_url})"
+    elif args.agent == "llm":
         kwargs = {}
         if args.model:
             kwargs["model"] = args.model
