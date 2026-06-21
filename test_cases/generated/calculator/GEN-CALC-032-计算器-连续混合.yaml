@@ -1,21 +1,26 @@
-id: "GEN-CALC-032"
-name: "计算器-连续混合"
+id: GEN-CALC-032
+name: 计算器-连续混合
 category: functional
-scene: "general"
+scene: general
 difficulty: easy
 priority: P1
-description: "验证Agent正确处理连续混合场景"
-input: "10 + 5 * 2 - 3 等于多少？"
+description: 验证Agent正确处理连续混合场景
+input: 10 + 5 * 2 - 3 等于多少？
 expected:
-  tool_sequence: ['calculator']
+  tool_sequence:
+  - calculator
   tool_calls:
-    - tool: "calculator"
-      params:
-        expression: "10+5*2-3"
-  final_answer_contains_any: ['17']
+  - tool: calculator
+    params:
+      expression: 10+5*2-3
+  final_answer_contains_any:
+  - '17'
   max_rounds: 2
 assertions:
   check_final_answer: true
   check_tool_sequence: true
   check_tool_params: true
-tags: ["calculator", "single-tool", "generated"]
+tags:
+- calculator
+- single-tool
+- generated

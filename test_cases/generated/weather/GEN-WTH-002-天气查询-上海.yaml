@@ -1,16 +1,20 @@
-id: "GEN-WTH-002"
-name: "天气查询-上海"
+id: GEN-WTH-002
+name: 天气查询-上海
 category: functional
-scene: "general"
+scene: general
 difficulty: easy
 priority: P1
-description: "验证Agent正确处理上海今天多少度"
-input: "上海今天多少度"
+description: 验证Agent正确处理上海今天多少度
+input: 上海今天多少度
 expected:
-  tool_sequence: ['weather']
+  tool_sequence:
+  - weather
   max_rounds: 2
 assertions:
   check_final_answer: true
   check_tool_sequence: true
   check_tool_params: false
-tags: ["weather", "single-tool", "generated"]
+tags:
+- weather
+- single-tool
+- generated

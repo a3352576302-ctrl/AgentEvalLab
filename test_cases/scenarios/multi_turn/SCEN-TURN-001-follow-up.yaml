@@ -1,16 +1,24 @@
-id: "SCEN-TURN-001"
-name: "场景-追问天气"
+id: SCEN-TURN-001
+name: 场景-追问天气
 category: scenarios
 scene: customer_service
 difficulty: medium
 priority: P1
-description: "先查天气，再追问具体细节"
-input: "北京今天天气怎么样？那明天呢？"
+description: 先查天气，再追问具体细节
+input: 北京今天天气怎么样？那明天呢？
 expected:
-  tool_sequence: ["weather", "weather"]
+  tool_sequence:
+  - weather
+  - weather
   max_rounds: 3
 assertions:
   check_final_answer: false
   check_tool_sequence: true
   check_tool_params: false
-tags: ["scenarios", "multi_turn", "weather", "P1"]
+tags:
+- scenarios
+- multi_turn
+- weather
+- P1
+requires_llm: true
+requires_llm_reason: 场景用例需要LLM语义理解

@@ -1,16 +1,25 @@
-id: "SCEN-MT-002"
-name: "场景-旅行预算计算"
+id: SCEN-MT-002
+name: 场景-旅行预算计算
 category: scenarios
 scene: customer_service
 difficulty: hard
 priority: P0
-description: "先查两个城市天气，再计算旅行总预算"
-input: "我去成都和拉萨各玩3天，每天的预算500元，帮我算一下总共需要多少钱？然后再查一下这两个城市的天气"
+description: 先查两个城市天气，再计算旅行总预算
+input: 我去成都和拉萨各玩3天，每天的预算500元，帮我算一下总共需要多少钱？然后再查一下这两个城市的天气
 expected:
-  tool_sequence: ["calculator", "weather", "weather"]
+  tool_sequence:
+  - calculator
+  - weather
+  - weather
   max_rounds: 4
 assertions:
   check_final_answer: false
   check_tool_sequence: true
   check_tool_params: false
-tags: ["scenarios", "multi-tool", "planning", "P0"]
+tags:
+- scenarios
+- multi-tool
+- planning
+- P0
+requires_llm: true
+requires_llm_reason: 场景用例需要LLM语义理解

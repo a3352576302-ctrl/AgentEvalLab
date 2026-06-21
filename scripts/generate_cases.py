@@ -13,11 +13,19 @@ import sys
 import os
 import argparse
 import hashlib
+import yaml
 
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, PROJECT_ROOT)
 
 OUT_DIR = os.path.join(PROJECT_ROOT, "test_cases", "generated")
+
+# 哪些标签的用例 RuleBasedAgent 无法通过 → 自动标记 requires_llm
+LLM_ONLY_TAGS = {"semantic", "prompt-injection", "social-engineering", "info-leak",
+                 "adversarial"}
+LLM_ONLY_CATEGORIES = {"scenarios"}
+# 哪些生成子目录的用例需要 LLM
+LLM_ONLY_GEN_SUBDIRS = {"knowledge", "security"}
 
 # ============================================================
 # 模板
@@ -72,7 +80,7 @@ CALC_TEMPLATES = [
     ("大数幂", "2 ** 10 等于多少？", "2**10", "1024", "single-tool"),
     ("两数平方和", "3*3 + 4*4", "3*3+4*4", "25", "single-tool"),
     ("多括号", "((5+3)*2)-4", "((5+3)*2)-4", "12", "single-tool"),
-    ("百分数", "200的15%是多少", "200*0.15", "30", "single-tool"),
+    ("百分数", "200的15%是多少", "200*0.15", "30", "semantic"),
     ("文字-找零", "买了一个8元的东西，给了20元，找回多少", "20-8", "12", "semantic"),
     ("混合-多商品", "一本书25元，一个本子8元，买了3本书2个本子，多少钱", "25*3+8*2", "91", "semantic"),
     ("亿级数字", "100000000 + 200000000", "100000000+200000000", "300000000", "single-tool"),
@@ -296,61 +304,51 @@ def _gen_security():
 # 写入
 # ============================================================
 
+def _needs_llm(case: dict) -> bool:
+    """判断用例是否需要 LLM（RuleBasedAgent 无法通过）。"""
+    tags = set(case.get("tags", []))
+    if tags & LLM_ONLY_TAGS:
+        return True
+    if case.get("category") in LLM_ONLY_CATEGORIES:
+        return True
+    if case.get("difficulty") in ("hard", "adversarial"):
+        return True
+    # 知识查询类用例 RuleBasedAgent 关键词匹配很弱
+    if "knowledge" in tags:
+        return True
+    # weather 用例中关键词不包含"天气"/"多少度"的
+    if "weather" in tags:
+        inp = case.get("input", "")
+        if "天气" not in inp and "多少度" not in inp and "会下雨" not in inp:
+            return True
+    return False
+
+
+def _add_requires_llm(case: dict) -> dict:
+    """为需要 LLM 的用例自动添加标记。"""
+    if _needs_llm(case):
+        case["requires_llm"] = True
+        case["requires_llm_reason"] = "RuleBasedAgent 关键词匹配无法覆盖此场景"
+    return case
+
+
 def _dump_yaml(case: dict) -> str:
-    """手工写 YAML，避免依赖 yaml 库的格式差异。"""
-    lines = [
-        f'id: "{case["id"]}"',
-        f'name: "{case["name"]}"',
-        f'category: {case["category"]}',
-        f'scene: "{case.get("scene", "general")}"',
-        f'difficulty: {case.get("difficulty", "medium")}',
-        f'priority: {case.get("priority", "P1")}',
-        f'description: "{case.get("description", "")}"',
-        f'input: "{case["input"]}"',
-        "expected:",
-    ]
-    exp = case.get("expected", {})
-    ts = exp.get("tool_sequence")
-    if ts is not None:
-        lines.append(f"  tool_sequence: {ts}")
-    tc = exp.get("tool_calls")
-    if tc:
-        lines.append("  tool_calls:")
-        for t in tc:
-            lines.append(f'    - tool: "{t["tool"]}"')
-            lines.append("      params:")
-            for k, v in t.get("params", {}).items():
-                lines.append(f'        {k}: "{v}"')
-    fca = exp.get("final_answer_contains")
-    if fca:
-        lines.append(f"  final_answer_contains: {fca}")
-    fco = exp.get("final_answer_contains_any")
-    if fco:
-        lines.append(f"  final_answer_contains_any: {fco}")
-    fnc = exp.get("final_answer_not_contains")
-    if fnc:
-        lines.append(f"  final_answer_not_contains: {fnc}")
-    mr = exp.get("max_rounds")
-    if mr is not None:
-        lines.append(f"  max_rounds: {mr}")
+    """使用 PyYAML 序列化用例，格式统一。"""
+    # 按顺序重建 dict 以保证 YAML 输出顺序稳定
+    ordered = {}
+    top_keys = ["id", "name", "category", "scene", "difficulty", "priority",
+                "description", "input",
+                "requires_llm", "requires_llm_reason",
+                "expected", "assertions", "tags"]
+    for k in top_keys:
+        if k in case:
+            ordered[k] = case[k]
+    # 其余字段
+    for k in case:
+        if k not in ordered:
+            ordered[k] = case[k]
 
-    ass = case.get("assertions", {})
-    lines.append("assertions:")
-    lines.append(f'  check_final_answer: {str(ass.get("check_final_answer", True)).lower()}')
-    lines.append(f'  check_tool_sequence: {str(ass.get("check_tool_sequence", True)).lower()}')
-    lines.append(f'  check_tool_params: {str(ass.get("check_tool_params", True)).lower()}')
-
-    for opt_key in ["check_final_answer_not_contains", "check_forbidden_tools",
-                     "check_forbidden_patterns", "check_token_cost"]:
-        val = ass.get(opt_key)
-        if val:
-            lines.append(f"  {opt_key}: true")
-
-    tags = case.get("tags", [])
-    if tags:
-        lines.append("tags: [" + ", ".join(f'"{t}"' for t in tags) + "]")
-
-    return "\n".join(lines) + "\n"
+    return yaml.dump(ordered, allow_unicode=True, default_flow_style=False, sort_keys=False)
 
 
 def main():
@@ -358,6 +356,8 @@ def main():
     parser.add_argument("--dry-run", action="store_true", help="预览不写入")
     parser.add_argument("--category", choices=["calculator", "weather", "knowledge", "boundary", "security"],
                         help="只生成指定类别")
+    parser.add_argument("--clean-generated", action="store_true",
+                        help="生成前清理旧的 generated 用例")
     args = parser.parse_args()
 
     generators = {
@@ -367,6 +367,11 @@ def main():
         "boundary": (_gen_boundary, "BOUND"),
         "security": (_gen_security, "SEC"),
     }
+
+    if args.clean_generated and os.path.exists(OUT_DIR):
+        import shutil
+        shutil.rmtree(OUT_DIR)
+        print(f"[CLEAN] 已删除 {OUT_DIR}")
 
     total = 0
     for cat, (gen_func, _) in generators.items():
@@ -385,6 +390,7 @@ def main():
         for case in cases:
             filename = os.path.join(cat_dir, f"{case['id']}-{case['name']}.yaml")
             # 用 name hash 确保稳定
+            case = _add_requires_llm(case)
             content = _dump_yaml(case)
             with open(filename, "w", encoding="utf-8") as f:
                 f.write(content)

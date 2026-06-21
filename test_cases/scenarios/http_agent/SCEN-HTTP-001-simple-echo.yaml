@@ -1,15 +1,20 @@
-id: "SCEN-HTTP-001"
-name: "场景-HTTPAgent简单调用"
+id: SCEN-HTTP-001
+name: 场景-HTTPAgent简单调用
 category: scenarios
 scene: coding
 difficulty: medium
 priority: P1
-description: "通过HTTPAgent调用外部Agent，验证简单问答"
-input: "1+1等于多少？"
+description: 通过HTTPAgent调用外部Agent，验证简单问答
+input: 1+1等于多少？
 expected:
   max_rounds: 1
 assertions:
   check_final_answer: false
   check_tool_sequence: false
   check_tool_params: false
-tags: ["scenarios", "http_agent", "P1"]
+tags:
+- scenarios
+- http_agent
+- P1
+requires_llm: true
+requires_llm_reason: 场景用例需要LLM语义理解

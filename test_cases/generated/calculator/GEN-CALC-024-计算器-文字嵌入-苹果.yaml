@@ -1,21 +1,28 @@
-id: "GEN-CALC-024"
-name: "计算器-文字嵌入-苹果"
+id: GEN-CALC-024
+name: 计算器-文字嵌入-苹果
 category: functional
-scene: "general"
+scene: general
 difficulty: medium
 priority: P1
-description: "验证Agent正确处理文字嵌入-苹果场景"
-input: "小明有3个苹果，又买了4个，一共有几个"
+description: 验证Agent正确处理文字嵌入-苹果场景
+input: 小明有3个苹果，又买了4个，一共有几个
+requires_llm: true
+requires_llm_reason: RuleBasedAgent 关键词匹配无法覆盖此场景
 expected:
-  tool_sequence: ['calculator']
+  tool_sequence:
+  - calculator
   tool_calls:
-    - tool: "calculator"
-      params:
-        expression: "3+4"
-  final_answer_contains_any: ['7']
+  - tool: calculator
+    params:
+      expression: 3+4
+  final_answer_contains_any:
+  - '7'
   max_rounds: 2
 assertions:
   check_final_answer: true
   check_tool_sequence: true
   check_tool_params: true
-tags: ["calculator", "semantic", "generated"]
+tags:
+- calculator
+- semantic
+- generated

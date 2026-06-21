@@ -1,16 +1,23 @@
-id: "SCEN-TURN-002"
-name: "场景-链式计算追问"
+id: SCEN-TURN-002
+name: 场景-链式计算追问
 category: scenarios
 scene: data_analysis
 difficulty: medium
 priority: P1
-description: "先算总和，再追问平均值"
-input: "100加200加300加400等于多少？"
+description: 先算总和，再追问平均值
+input: 100加200加300加400等于多少？
 expected:
-  tool_sequence: ["calculator"]
+  tool_sequence:
+  - calculator
   max_rounds: 2
 assertions:
   check_final_answer: false
   check_tool_sequence: true
   check_tool_params: false
-tags: ["scenarios", "multi_turn", "calculator", "P1"]
+tags:
+- scenarios
+- multi_turn
+- calculator
+- P1
+requires_llm: true
+requires_llm_reason: 场景用例需要LLM语义理解

@@ -1,16 +1,24 @@
-id: "SCEN-DA-001"
-name: "场景-数据统计分析"
+id: SCEN-DA-001
+name: 场景-数据统计分析
 category: scenarios
 scene: data_analysis
 difficulty: hard
 priority: P1
-description: "多步计算——求平均值"
-input: "我最近的5次销售额是1200、3500、2800、4100、1900，帮我算总销售额和平均销售额"
+description: 多步计算——求平均值
+input: 我最近的5次销售额是1200、3500、2800、4100、1900，帮我算总销售额和平均销售额
 expected:
-  tool_sequence: ["calculator", "calculator"]
+  tool_sequence:
+  - calculator
+  - calculator
   max_rounds: 3
 assertions:
   check_final_answer: false
   check_tool_sequence: true
   check_tool_params: false
-tags: ["scenarios", "data_analysis", "calculator", "P1"]
+tags:
+- scenarios
+- data_analysis
+- calculator
+- P1
+requires_llm: true
+requires_llm_reason: 场景用例需要LLM语义理解

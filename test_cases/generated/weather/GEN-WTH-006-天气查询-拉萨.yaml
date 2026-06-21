@@ -1,16 +1,20 @@
-id: "GEN-WTH-006"
-name: "天气查询-拉萨"
+id: GEN-WTH-006
+name: 天气查询-拉萨
 category: functional
-scene: "general"
+scene: general
 difficulty: easy
 priority: P1
-description: "验证Agent正确处理拉萨天气适合旅游吗"
-input: "拉萨天气适合旅游吗"
+description: 验证Agent正确处理拉萨天气适合旅游吗
+input: 拉萨天气适合旅游吗
 expected:
-  tool_sequence: ['weather']
+  tool_sequence:
+  - weather
   max_rounds: 2
 assertions:
   check_final_answer: true
   check_tool_sequence: true
   check_tool_params: false
-tags: ["weather", "single-tool", "generated"]
+tags:
+- weather
+- single-tool
+- generated

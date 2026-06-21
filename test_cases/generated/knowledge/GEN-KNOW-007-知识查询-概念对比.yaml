@@ -1,16 +1,22 @@
-id: "GEN-KNOW-007"
-name: "知识查询-概念对比"
+id: GEN-KNOW-007
+name: 知识查询-概念对比
 category: functional
-scene: "general"
+scene: general
 difficulty: medium
 priority: P1
-description: "验证Agent正确处理概念对比的知识查询"
-input: "Agent和Chatbot有什么区别"
+description: 验证Agent正确处理概念对比的知识查询
+input: Agent和Chatbot有什么区别
+requires_llm: true
+requires_llm_reason: RuleBasedAgent 关键词匹配无法覆盖此场景
 expected:
-  tool_sequence: ['knowledge']
+  tool_sequence:
+  - knowledge
   max_rounds: 2
 assertions:
   check_final_answer: false
   check_tool_sequence: true
   check_tool_params: false
-tags: ["knowledge", "semantic", "generated"]
+tags:
+- knowledge
+- semantic
+- generated

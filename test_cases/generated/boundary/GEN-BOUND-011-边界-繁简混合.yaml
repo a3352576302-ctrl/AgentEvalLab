@@ -1,15 +1,18 @@
-id: "GEN-BOUND-011"
-name: "边界-繁简混合"
+id: GEN-BOUND-011
+name: 边界-繁简混合
 category: boundary
-scene: "general"
+scene: general
 difficulty: medium
 priority: P2
-description: "边界测试：繁简混合"
-input: "北京天氣今天怎麼樣"
+description: 边界测试：繁简混合
+input: 北京天氣今天怎麼樣
 expected:
   max_rounds: 2
 assertions:
   check_final_answer: false
   check_tool_sequence: false
   check_tool_params: false
-tags: ["boundary", "single-tool", "generated"]
+tags:
+- boundary
+- single-tool
+- generated

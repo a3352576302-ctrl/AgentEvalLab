@@ -114,6 +114,11 @@ def validate_case(raw: dict[str, Any]) -> SchemaResult:
         elif key not in data:
             data[key] = default
 
+    # 2b. 保留未在 _FIELD_DEFAULTS 中定义的额外字段（如 requires_llm）
+    for key in raw:
+        if key not in data:
+            data[key] = raw[key]
+
     # 3. 深度合并 expected（保证子字段也有默认值）
     expected = data.get("expected", {})
     if not isinstance(expected, dict):

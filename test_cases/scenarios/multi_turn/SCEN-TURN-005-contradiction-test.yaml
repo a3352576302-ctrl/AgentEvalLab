@@ -1,0 +1,18 @@
+id: "SCEN-TURN-005"
+name: "场景-前后矛盾测试"
+category: scenarios
+scene: customer_service
+difficulty: hard
+priority: P2
+description: "先问A后否定A——验证上下文一致性"
+input: "深圳今天多少度？不对，我问的是深圳昨天多少度？"
+expected:
+  tool_sequence: ["weather", "weather"]
+  max_rounds: 3
+assertions:
+  check_final_answer: false
+  check_tool_sequence: true
+  check_tool_params: false
+requires_llm: true
+requires_llm_reason: "前后矛盾修正需要语义理解"
+tags: ["scenarios", "multi_turn", "weather", "P2"]

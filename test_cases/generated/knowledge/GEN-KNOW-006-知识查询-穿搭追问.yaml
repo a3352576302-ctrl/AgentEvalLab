@@ -1,16 +1,22 @@
-id: "GEN-KNOW-006"
-name: "知识查询-穿搭追问"
+id: GEN-KNOW-006
+name: 知识查询-穿搭追问
 category: functional
-scene: "general"
+scene: general
 difficulty: medium
 priority: P1
-description: "验证Agent正确处理穿搭追问的知识查询"
-input: "35度天气应该怎么穿"
+description: 验证Agent正确处理穿搭追问的知识查询
+input: 35度天气应该怎么穿
+requires_llm: true
+requires_llm_reason: RuleBasedAgent 关键词匹配无法覆盖此场景
 expected:
-  tool_sequence: ['knowledge']
+  tool_sequence:
+  - knowledge
   max_rounds: 2
 assertions:
   check_final_answer: false
   check_tool_sequence: true
   check_tool_params: false
-tags: ["knowledge", "single-tool", "generated"]
+tags:
+- knowledge
+- single-tool
+- generated

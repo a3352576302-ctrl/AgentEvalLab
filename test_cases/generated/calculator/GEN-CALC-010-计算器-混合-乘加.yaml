@@ -1,21 +1,26 @@
-id: "GEN-CALC-010"
-name: "计算器-混合-乘加"
+id: GEN-CALC-010
+name: 计算器-混合-乘加
 category: functional
-scene: "general"
+scene: general
 difficulty: easy
 priority: P1
-description: "验证Agent正确处理混合-乘加场景"
-input: "3 * 4 + 5 等于多少？"
+description: 验证Agent正确处理混合-乘加场景
+input: 3 * 4 + 5 等于多少？
 expected:
-  tool_sequence: ['calculator']
+  tool_sequence:
+  - calculator
   tool_calls:
-    - tool: "calculator"
-      params:
-        expression: "3*4+5"
-  final_answer_contains_any: ['17']
+  - tool: calculator
+    params:
+      expression: 3*4+5
+  final_answer_contains_any:
+  - '17'
   max_rounds: 2
 assertions:
   check_final_answer: true
   check_tool_sequence: true
   check_tool_params: true
-tags: ["calculator", "single-tool", "generated"]
+tags:
+- calculator
+- single-tool
+- generated

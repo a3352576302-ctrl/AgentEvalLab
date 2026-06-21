@@ -1,21 +1,26 @@
-id: "GEN-CALC-002"
-name: "计算器-加法-三位数"
+id: GEN-CALC-002
+name: 计算器-加法-三位数
 category: functional
-scene: "general"
+scene: general
 difficulty: easy
 priority: P1
-description: "验证Agent正确处理加法-三位数场景"
-input: "456 + 789 等于多少？"
+description: 验证Agent正确处理加法-三位数场景
+input: 456 + 789 等于多少？
 expected:
-  tool_sequence: ['calculator']
+  tool_sequence:
+  - calculator
   tool_calls:
-    - tool: "calculator"
-      params:
-        expression: "456+789"
-  final_answer_contains_any: ['1245']
+  - tool: calculator
+    params:
+      expression: 456+789
+  final_answer_contains_any:
+  - '1245'
   max_rounds: 2
 assertions:
   check_final_answer: true
   check_tool_sequence: true
   check_tool_params: true
-tags: ["calculator", "single-tool", "generated"]
+tags:
+- calculator
+- single-tool
+- generated

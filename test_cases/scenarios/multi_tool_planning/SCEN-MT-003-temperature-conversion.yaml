@@ -1,16 +1,25 @@
-id: "SCEN-MT-003"
-name: "场景-温度转换与穿搭"
+id: SCEN-MT-003
+name: 场景-温度转换与穿搭
 category: scenarios
 scene: customer_service
 difficulty: hard
 priority: P1
-description: "查天气 → 计算华氏度 → 查穿搭建议"
-input: "北京今天多少度？帮我把摄氏度转成华氏度，然后告诉我穿什么合适"
+description: 查天气 → 计算华氏度 → 查穿搭建议
+input: 北京今天多少度？帮我把摄氏度转成华氏度，然后告诉我穿什么合适
 expected:
-  tool_sequence: ["weather", "calculator", "knowledge"]
+  tool_sequence:
+  - weather
+  - calculator
+  - knowledge
   max_rounds: 4
 assertions:
   check_final_answer: false
   check_tool_sequence: true
   check_tool_params: false
-tags: ["scenarios", "multi-tool", "planning", "P1"]
+tags:
+- scenarios
+- multi-tool
+- planning
+- P1
+requires_llm: true
+requires_llm_reason: 场景用例需要LLM语义理解

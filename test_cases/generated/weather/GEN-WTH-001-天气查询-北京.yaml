@@ -1,16 +1,20 @@
-id: "GEN-WTH-001"
-name: "天气查询-北京"
+id: GEN-WTH-001
+name: 天气查询-北京
 category: functional
-scene: "general"
+scene: general
 difficulty: easy
 priority: P1
-description: "验证Agent正确处理北京今天天气怎么样"
-input: "北京今天天气怎么样"
+description: 验证Agent正确处理北京今天天气怎么样
+input: 北京今天天气怎么样
 expected:
-  tool_sequence: ['weather']
+  tool_sequence:
+  - weather
   max_rounds: 2
 assertions:
   check_final_answer: true
   check_tool_sequence: true
   check_tool_params: false
-tags: ["weather", "single-tool", "generated"]
+tags:
+- weather
+- single-tool
+- generated

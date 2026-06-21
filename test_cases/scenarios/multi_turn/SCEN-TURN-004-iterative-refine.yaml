@@ -1,0 +1,19 @@
+id: "SCEN-TURN-004"
+name: "场景-迭代追问优化"
+category: scenarios
+scene: customer_service
+difficulty: hard
+priority: P1
+description: "多轮追问——先查知识，再追问细节"
+input: "什么是RAG？那它的chunk size一般设多大？为什么不能太大？"
+expected:
+  tool_sequence: ["knowledge"]
+  max_rounds: 2
+  final_answer_contains: ["RAG", "chunk"]
+assertions:
+  check_final_answer: true
+  check_tool_sequence: true
+  check_tool_params: false
+requires_llm: true
+requires_llm_reason: "多轮追问需要语义理解"
+tags: ["scenarios", "multi_turn", "knowledge", "P1"]

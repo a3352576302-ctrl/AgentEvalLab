@@ -14,6 +14,7 @@ import pytest
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from agentevallab.runner import run_case
+from agentevallab.agent import RuleBasedAgent
 
 
 # ============================================================
@@ -69,6 +70,12 @@ def test_yaml_case(yaml_case, agent):
     # YAML 加载失败
     if "_load_error" in yaml_case:
         pytest.fail(f"YAML 加载失败: {yaml_case['_load_error']}")
+
+    # requires_llm 用例跳过 RuleBasedAgent（通过 agent fixture 判断）
+    import pytest as _pytest
+    if yaml_case.get("requires_llm"):
+        if isinstance(agent, RuleBasedAgent):
+            _pytest.skip(f"LLM-only: {yaml_case.get('requires_llm_reason', '需要LLM语义理解')}")
 
     # 执行用例
     result = run_case(yaml_case, agent)

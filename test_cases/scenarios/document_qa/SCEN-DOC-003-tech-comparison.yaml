@@ -1,17 +1,27 @@
-id: "SCEN-DOC-003"
-name: "场景-技术对比问答"
+id: SCEN-DOC-003
+name: 场景-技术对比问答
 category: scenarios
 scene: coding
 difficulty: hard
 priority: P1
-description: "问技术对比——Agent需从知识库提取两个概念并对比"
-input: "Agent和普通的Chatbot有什么本质区别？请从工具调用和自主性两个角度回答"
+description: 问技术对比——Agent需从知识库提取两个概念并对比
+input: Agent和普通的Chatbot有什么本质区别？请从工具调用和自主性两个角度回答
 expected:
-  tool_sequence: ["knowledge"]
+  tool_sequence:
+  - knowledge
   max_rounds: 2
-  final_answer_contains: ["Agent", "Chatbot"]
+  final_answer_contains:
+  - Agent
+  - Chatbot
 assertions:
   check_final_answer: true
   check_tool_sequence: true
   check_tool_params: false
-tags: ["scenarios", "document_qa", "knowledge", "semantic", "P1"]
+tags:
+- scenarios
+- document_qa
+- knowledge
+- semantic
+- P1
+requires_llm: true
+requires_llm_reason: 场景用例需要LLM语义理解
