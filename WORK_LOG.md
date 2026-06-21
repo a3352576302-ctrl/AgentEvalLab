@@ -203,7 +203,7 @@
 - Dockerfile: python:3.11-slim, rule 模式默认命令
 - docker-compose.yml: 挂载 reports/, env_file: .env
 - .dockerignore: 排除 .env/reports/cache
-- ⚠️ docker 命令当前环境不可用，构建未实际执行。
+- ✅ 2026-06-22：Windows Docker Desktop 验证通过，docker build + docker run 51/51 passed
   验证命令（需 Docker 环境）：
   ```bash
   docker build -t agentevallab .
