@@ -57,6 +57,7 @@ from agentevallab.run_store import (
     _generate_run_id,
 )
 from agentevallab.model_registry import load_registry, get_model
+from agentevallab.baseline import save_baseline as save_baseline_data, compare_baseline
 import glob
 
 # 路径配置
@@ -133,6 +134,26 @@ def main():
     parser.add_argument(
         "--compare-run", type=str, default=None, metavar="RUN_ID",
         help="在报告中对比另一个运行的结果"
+    )
+    parser.add_argument(
+        "--set-baseline", type=str, default=None, metavar="NAME",
+        help="将当前运行保存为 baseline"
+    )
+    parser.add_argument(
+        "--baseline", type=str, default=None, metavar="NAME",
+        help="与指定 baseline 对比，检测退化"
+    )
+    parser.add_argument(
+        "--baseline-threshold-pass-rate", type=float, default=5,
+        help="通过率退化阈值，百分比（默认 5）"
+    )
+    parser.add_argument(
+        "--baseline-threshold-p95", type=float, default=20,
+        help="P95延迟退化阈值，百分比（默认 20）"
+    )
+    parser.add_argument(
+        "--baseline-threshold-token", type=float, default=20,
+        help="Token退化阈值，百分比（默认 20）"
     )
     args = parser.parse_args()
 
@@ -322,6 +343,34 @@ def main():
         )
         run_path = save_run(record, reports_dir=REPORT_DIR)
         print(f"运行记录已保存: {run_path}")
+
+    # 设为 baseline
+    if args.set_baseline:
+        # 用刚保存的 run JSON
+        current_data = load_run(run_id, reports_dir=REPORT_DIR)
+        if current_data:
+            bp = save_baseline_data(args.set_baseline, current_data)
+            print(f"Baseline 已保存: {bp}")
+        else:
+            print("错误: 无法保存 baseline，请先使用 --save-run")
+
+    # 与 baseline 对比
+    baseline_result = None
+    if args.baseline:
+        current_data = load_run(run_id, reports_dir=REPORT_DIR)
+        if current_data:
+            baseline_result = compare_baseline(
+                current_data,
+                args.baseline,
+                thresholds={
+                    "pass_rate": args.baseline_threshold_pass_rate,
+                    "p95_latency": args.baseline_threshold_p95,
+                    "token": args.baseline_threshold_token,
+                },
+            )
+            print(f"\nBaseline 对比 [{args.baseline}]: {baseline_result.status}")
+            for d in baseline_result.details:
+                print(f"  {d}")
 
     # 加载对比 run
     compare_data = None
