@@ -1,0 +1,20 @@
+__pycache__
+*.pyc
+.pytest_cache
+.git
+.env
+reports/*.html
+reports/*.xml
+reports/runs/
+reports/baselines/
+reports/dashboard.html
+*.tmp
+.vscode
+.idea
+*.png
+*.jpg
+*.jpeg
+# 不打包面试备考资料
+*面试备考*
+*面试速查*
+*毕业设计*

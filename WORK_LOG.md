@@ -178,6 +178,41 @@
 
 ---
 
+## 2026-06-21：P1 Step 1 — 模型注册表 ✅
+
+- config/models.yaml: deepseek-chat, minimax-m2, minimax-m3
+- model_registry.py + test_model_registry.py (11 tests)
+- run_report.py: --model-alias / --list-models
+- 256 passed
+
+## P1 Step 2 — Baseline 回归 ✅
+
+- baseline.py: save/load/compare_baseline, 4 维度退化检测
+- run_report.py: --set-baseline / --baseline / 3 threshold 参数
+- 263 passed
+
+## P1 Step 3 — 最小 Dashboard ✅
+
+- dashboard.py: 静态 HTML, 历史列表 + 总览卡片 + 模型对比 + 归因 + 安全
+- build_dashboard.py: CLI 生成器
+- run_report.py: --dashboard 自动刷新
+- 269 passed
+
+## P1 Step 4 — Docker ✅ (文件就绪，待本地验证)
+
+- Dockerfile: python:3.11-slim, rule 模式默认命令
+- docker-compose.yml: 挂载 reports/, env_file: .env
+- .dockerignore: 排除 .env/reports/cache
+- ⚠️ docker 命令当前环境不可用，构建未实际执行。
+  验证命令（需 Docker 环境）：
+  ```bash
+  docker build -t agentevallab .
+  docker run --rm agentevallab
+  docker run --rm -v ./reports:/app/reports agentevallab
+  ```
+
+---
+
 ## P0.1 总结
 
 **版本：** P0.1 | **日期：** 2026-06-21 | **测试：** 245 passed | **YAML：** 51 条

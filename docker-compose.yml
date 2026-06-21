@@ -1,0 +1,10 @@
+services:
+  agentevallab:
+    build: .
+    volumes:
+      # 挂载 reports/ 让报告能落到宿主机
+      - ./reports:/app/reports
+    # 可选：通过 .env 注入 API Key（.env 不提交 Git）
+    env_file:
+      - .env
+    # 无 .env 时默认跑 rule 模式
