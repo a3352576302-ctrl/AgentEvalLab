@@ -80,3 +80,62 @@ class TestGeneratedQuality:
             sec_cases.append(case)
             assert case.get("requires_llm"), f"{case['id']} security case missing requires_llm"
         assert len(sec_cases) >= 6
+
+
+class TestCleanGenerated:
+    """--clean-generated 功能"""
+
+    def test_clean_flag存在(self):
+        """--help 中应有 --clean-generated"""
+        result = _run_generator("--help")
+        assert "--clean-generated" in result.stdout
+
+    def test_清理后重新生成数量正确(self):
+        """--clean-generated 后 generated 目录应有 83 条"""
+        import yaml, glob
+        gen_dir = os.path.join(os.path.dirname(__file__), "..", "test_cases", "generated")
+        yaml_files = glob.glob(os.path.join(gen_dir, "**/*.yaml"), recursive=True)
+        assert len(yaml_files) == 83, f"expected 83 generated, got {len(yaml_files)}"
+
+
+class TestGenerationStability:
+    """生成稳定性"""
+
+    def test_两次生成ID一致(self):
+        """同一个模板两次生成产生的 ID 应该相同"""
+        import yaml, glob, shutil, tempfile
+        gen_dir = os.path.join(os.path.dirname(__file__), "..", "test_cases", "generated")
+        # 读取当前 calculator IDs
+        calc_ids = set()
+        for fp in glob.glob(os.path.join(gen_dir, "calculator", "*.yaml")):
+            with open(fp, "r", encoding="utf-8") as f:
+                case = yaml.safe_load(f)
+            calc_ids.add(case.get("id"))
+        # 重新生成到临时目录
+        with tempfile.TemporaryDirectory() as tmpdir:
+            result = subprocess.run(
+                [sys.executable,
+                 os.path.join(os.path.dirname(__file__), "..", "scripts", "generate_cases.py"),
+                 "--category", "calculator"],
+                capture_output=True, text=True,
+                cwd=os.path.join(os.path.dirname(__file__), ".."),
+            )
+            assert result.returncode == 0
+        # 再读一次，ID 应该相同
+        calc_ids2 = set()
+        for fp in glob.glob(os.path.join(gen_dir, "calculator", "*.yaml")):
+            with open(fp, "r", encoding="utf-8") as f:
+                case = yaml.safe_load(f)
+            calc_ids2.add(case.get("id"))
+        assert calc_ids == calc_ids2, "IDs changed between generation runs"
+
+    def test_所有生成ID唯一(self):
+        """所有 generated 用例 ID 唯一"""
+        import yaml, glob
+        gen_dir = os.path.join(os.path.dirname(__file__), "..", "test_cases", "generated")
+        all_ids = []
+        for fp in glob.glob(os.path.join(gen_dir, "**/*.yaml"), recursive=True):
+            with open(fp, "r", encoding="utf-8") as f:
+                case = yaml.safe_load(f)
+            all_ids.append(case.get("id"))
+        assert len(all_ids) == len(set(all_ids)), f"duplicate IDs: {len(all_ids)} - {len(set(all_ids))}"

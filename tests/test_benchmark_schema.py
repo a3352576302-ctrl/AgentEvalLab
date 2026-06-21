@@ -72,9 +72,9 @@ class TestRequiredFields:
 class TestRequiresLLM:
     """requires_llm 标记"""
 
-    def test_数量匹配(self):
+    def test_数量为45(self):
         llm = [c for c in _load_all() if c.get("requires_llm")]
-        assert len(llm) >= 30, f"expected >=30 requires_llm, got {len(llm)}"
+        assert len(llm) == 45, f"expected 45 requires_llm, got {len(llm)}"
 
     def test_LLM用例有原因(self):
         for c in _load_all():

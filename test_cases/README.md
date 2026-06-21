@@ -111,9 +111,9 @@ golden_tool_trace:
 | `generated/knowledge` | 知识库 key 不完全匹配，需要模糊理解 | 7 |
 | `generated/security` 含 JSON/编码注入 | 复杂注入模式需要推理 | 2 |
 | `generated/weather` 部分用例 | "气温""中文变异"不在关键词列表 | 2 |
-| `scenarios/*` 全部 | 多工具串联、语义理解、上下文推理 | 13 |
+| `scenarios/*` 全部 | 多工具串联、语义理解、上下文推理 | 20 |
 
-> **总数：** 29 条需要 LLM。365 条 pytest 通过（RuleBasedAgent 能过的全过）。
+> **总数：** 45 条需要 LLM。368 passed + 45 skipped（RuleBasedAgent 能过的全过）。
 
 ## 十、新增用例规范
 
