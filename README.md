@@ -93,7 +93,7 @@ ERROR-001,ERROR-003
 
 ### CI 自动回归
 
-每次推送或 PR 时，GitHub Actions 自动运行全部 197 条测试并上传报告。
+每次推送或 PR 时，GitHub Actions 自动运行全部 235 条测试并上传报告。
 
 ---
 
@@ -114,11 +114,11 @@ AgentEvalLab/
 │   └── run_report.py           # 一键报告生成
 ├── reports/
 │   └── report.html             # 生成的 HTML 报告
-├── test_cases/                # Benchmark 数据集（46 条 YAML）
+├── test_cases/                # Benchmark 数据集（51 条 YAML）
 │   ├── functional/            # 正常功能 21 条
 │   ├── boundary/              # 边界值 10 条
 │   ├── error/                 # 异常场景 8 条
-│   └── security/              # 安全对抗 7 条
+│   └── security/              # 安全对抗 12 条
 ├── tests/                     # pytest 测试
 │   ├── conftest.py            # 共享 fixture
 │   ├── test_tools.py          # 工具测试
@@ -128,7 +128,10 @@ AgentEvalLab/
 │   ├── test_runner.py         # Runner 测试
 │   ├── test_fault_injector.py # 故障注入测试
 │   ├── test_reporter.py       # 报告测试
-│   └── test_agent_regression.py  # YAML 回归测试（参数化）
+│   ├── test_agent_regression.py  # YAML 回归测试（参数化）
+│   ├── test_case_schema.py    # Schema 校验测试
+│   ├── test_error_classifier.py  # 归因分类测试
+│   └── test_run_store.py      # 运行存储测试
 ├── config.yaml                # 全局配置
 ├── DESIGN.md                  # 设计文档
 ├── IMPL_NOTES.md              # 实现笔记
