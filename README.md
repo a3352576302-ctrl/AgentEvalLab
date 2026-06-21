@@ -97,6 +97,15 @@ python scripts/build_dashboard.py
 python scripts/run_report.py --html-only --save-run --dashboard
 ```
 
+### API 服务（P2）
+
+```bash
+# 启动 API 服务
+python scripts/serve.py
+# 打开 http://127.0.0.1:8000/health
+# 提交评测：POST /runs  {"agent":"rule","case_ids":["FUNC-001"]}
+```
+
 ### Docker 一键启动
 
 ```bash
@@ -330,7 +339,8 @@ with fault_context("weather", "timeout", delay=3.0):
 | v1.0 | DeepSeek 真实模型评测就绪 | ✅ |
 | v1.1 | 双模型横向对比 + Provider 修复 + 三类失败归因 | ✅ |
 | P0.1 | 用例schema + 17种归因 + API重试/续跑/对比 + 安全12条 | ✅ |
-| P1 | 模型注册表 + baseline回归 + Dashboard + Docker | ✅ ← 当前 |
+| P1 | 模型注册表 + baseline回归 + Dashboard + Docker | ✅ |
+| P2 | SQLite + FastAPI + 人工复核 + HTTPAgent | ✅ ← 当前 |
 
 ---
 
