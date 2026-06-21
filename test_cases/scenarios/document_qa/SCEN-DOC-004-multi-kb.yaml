@@ -4,13 +4,19 @@ category: functional
 scene: customer_service
 difficulty: hard
 priority: P1
-description: 一次对话涉及多个知识主题——需多次查询知识库
+description: 一次对话涉及多个知识主题——需多次查询知识库。tool_calls为参考轨迹，LLM可能合理变化
 input: 先帮我解释什么是RAG，然后再解释一下Prompt注入攻击是什么
 expected:
   tool_sequence:
   - knowledge
   - knowledge
   max_rounds: 3
+  tool_calls:
+  - tool: knowledge
+    params: &id001
+      query: 参考查询词见input
+  - tool: knowledge
+    params: *id001
 assertions:
   check_final_answer: false
   check_tool_sequence: true

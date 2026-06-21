@@ -1,17 +1,26 @@
-id: "BOUND-007"
-name: "边界-长表达式"
+id: BOUND-007
+name: 边界-长表达式
 category: boundary
-description: "多个运算符串联的表达式"
-input: "1 + 2 + 3 + 4 + 5 等于多少？"
+description: 多个运算符串联的表达式
+input: 1 + 2 + 3 + 4 + 5 等于多少？
 expected:
-  tool_sequence: ["calculator"]
+  tool_sequence:
+  - calculator
   tool_calls:
-    - tool: "calculator"
-      params: { expression: "1+2+3+4+5" }
-  final_answer_contains: ["15"]
+  - tool: calculator
+    params:
+      expression: 1+2+3+4+5
+  final_answer_contains:
+  - '15'
   max_rounds: 2
 assertions:
   check_final_answer: true
   check_tool_sequence: true
   check_tool_params: true
-tags: ["calculator", "boundary", "long-expression"]
+tags:
+- calculator
+- boundary
+- long-expression
+scene: general
+difficulty: medium
+priority: P1

@@ -4,7 +4,7 @@ category: functional
 scene: customer_service
 difficulty: hard
 priority: P1
-description: 查天气 → 计算华氏度 → 查穿搭建议
+description: 查天气 → 计算华氏度 → 查穿搭建议。tool_calls为参考轨迹，LLM可能合理变化
 input: 北京今天多少度？帮我把摄氏度转成华氏度，然后告诉我穿什么合适
 expected:
   tool_sequence:
@@ -12,6 +12,16 @@ expected:
   - calculator
   - knowledge
   max_rounds: 4
+  tool_calls:
+  - tool: weather
+    params:
+      city: 参考城市名见input
+  - tool: calculator
+    params:
+      expression: 参考表达式见input
+  - tool: knowledge
+    params:
+      query: 参考查询词见input
 assertions:
   check_final_answer: false
   check_tool_sequence: true

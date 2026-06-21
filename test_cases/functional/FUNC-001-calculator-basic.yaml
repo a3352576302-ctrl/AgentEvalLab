@@ -1,15 +1,18 @@
-id: "FUNC-001"
-name: "计算器-乘法"
+id: FUNC-001
+name: 计算器-乘法
 category: functional
-description: "验证 Agent 正确识别算术意图并调用 calculator 工具"
-input: "123 * 456 等于多少？"
+description: 验证 Agent 正确识别算术意图并调用 calculator 工具
+input: 123 * 456 等于多少？
 expected:
-  tool_sequence: ["calculator"]
+  tool_sequence:
+  - calculator
   tool_calls:
-    - tool: "calculator"
-      params:
-        expression: "123*456"
-  final_answer_contains_any: ["56088", "56,088"]  # LLM可能加千分位逗号
+  - tool: calculator
+    params:
+      expression: 123*456
+  final_answer_contains_any:
+  - '56088'
+  - 56,088
   max_rounds: 2
   max_latency_ms: 500
 assertions:
@@ -17,4 +20,10 @@ assertions:
   check_tool_sequence: true
   check_tool_params: true
   check_max_rounds: true
-tags: ["calculator", "single-tool", "basic"]
+tags:
+- calculator
+- single-tool
+- basic
+scene: general
+difficulty: medium
+priority: P1

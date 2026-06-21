@@ -4,7 +4,7 @@ category: functional
 scene: customer_service
 difficulty: hard
 priority: P0
-description: 多工具串联——先查天气再判断穿搭
+description: 多工具串联——先查天气再判断穿搭。tool_calls为参考轨迹，LLM可能合理变化
 input: 我明天要去北京出差，北京明天什么天气？我需要带什么衣服？
 expected:
   tool_sequence:
@@ -14,6 +14,13 @@ expected:
   final_answer_contains:
   - 北京
   - 度
+  tool_calls:
+  - tool: weather
+    params:
+      city: 参考城市名见input
+  - tool: knowledge
+    params:
+      query: 参考查询词见input
 assertions:
   check_final_answer: true
   check_tool_sequence: true

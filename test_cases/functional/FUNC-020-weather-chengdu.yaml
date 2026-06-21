@@ -1,17 +1,26 @@
-id: "FUNC-020"
-name: "天气查询-成都"
+id: FUNC-020
+name: 天气查询-成都
 category: functional
-description: "成都天气查询"
-input: "成都今天天气怎么样？"
+description: 成都天气查询
+input: 成都今天天气怎么样？
 expected:
-  tool_sequence: ["weather"]
+  tool_sequence:
+  - weather
   tool_calls:
-    - tool: "weather"
-      params: { city: "成都" }
-  final_answer_contains: ["成都", "24"]
+  - tool: weather
+    params:
+      city: 成都
+  final_answer_contains:
+  - 成都
+  - '24'
   max_rounds: 2
 assertions:
   check_final_answer: true
   check_tool_sequence: true
   check_tool_params: true
-tags: ["weather", "single-tool"]
+tags:
+- weather
+- single-tool
+scene: general
+difficulty: easy
+priority: P1

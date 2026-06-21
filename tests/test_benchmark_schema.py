@@ -45,6 +45,22 @@ class TestCounts:
         assert "security" in cats
 
 
+class TestRequiredMetadata:
+    """所有用例必须有 scene / difficulty / priority"""
+
+    def test_所有用例有scene(self):
+        for c in _load_all():
+            assert c.get("scene"), f"{c.get('id')} missing scene"
+
+    def test_所有用例有difficulty(self):
+        for c in _load_all():
+            assert c.get("difficulty"), f"{c.get('id')} missing difficulty"
+
+    def test_所有用例有priority(self):
+        for c in _load_all():
+            assert c.get("priority"), f"{c.get('id')} missing priority"
+
+
 class TestUniqueIDs:
     """ID 唯一性"""
 

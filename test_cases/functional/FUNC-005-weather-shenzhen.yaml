@@ -1,18 +1,26 @@
-id: "FUNC-005"
-name: "天气查询-深圳"
+id: FUNC-005
+name: 天气查询-深圳
 category: functional
-description: "验证 Agent 能正确识别深圳的天气查询意图"
-input: "帮我查一下深圳的天气"
+description: 验证 Agent 能正确识别深圳的天气查询意图
+input: 帮我查一下深圳的天气
 expected:
-  tool_sequence: ["weather"]
+  tool_sequence:
+  - weather
   tool_calls:
-    - tool: "weather"
-      params:
-        city: "深圳"
-  final_answer_contains: ["深圳", "32"]
+  - tool: weather
+    params:
+      city: 深圳
+  final_answer_contains:
+  - 深圳
+  - '32'
   max_rounds: 2
 assertions:
   check_final_answer: true
   check_tool_sequence: true
   check_tool_params: true
-tags: ["weather", "single-tool"]
+tags:
+- weather
+- single-tool
+scene: general
+difficulty: easy
+priority: P1

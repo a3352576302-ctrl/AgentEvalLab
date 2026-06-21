@@ -1,20 +1,33 @@
-id: "ERROR-001"
-name: "异常-天气工具超时"
+id: ERROR-001
+name: 异常-天气工具超时
 category: error
-description: "weather 超时后 Agent 应识别超时、给出可理解的降级回复"
-input: "查一下北京的天气"
+description: weather 超时后 Agent 应识别超时、给出可理解的降级回复
+input: 查一下北京的天气
 fault:
-  tool: "weather"
-  type: "timeout"
+  tool: weather
+  type: timeout
   delay: 0.02
 expected:
-  tool_sequence: ["weather"]
+  tool_sequence:
+  - weather
   max_rounds: 2
-  final_answer_contains: ["超时", "天气"]
-  final_answer_not_contains: ["Traceback", "Exception", "NoneType"]
+  final_answer_contains:
+  - 超时
+  - 天气
+  final_answer_not_contains:
+  - Traceback
+  - Exception
+  - NoneType
 assertions:
   check_final_answer: true
   check_tool_sequence: true
   check_tool_params: false
   check_final_answer_not_contains: true
-tags: ["error", "timeout", "fault-injection", "recovery"]
+tags:
+- error
+- timeout
+- fault-injection
+- recovery
+scene: general
+difficulty: hard
+priority: P1

@@ -1,17 +1,25 @@
-id: "FUNC-018"
-name: "计算器-减法"
+id: FUNC-018
+name: 计算器-减法
 category: functional
-description: "减法运算"
-input: "500 减去 123 等于多少？"
+description: 减法运算
+input: 500 减去 123 等于多少？
 expected:
-  tool_sequence: ["calculator"]
+  tool_sequence:
+  - calculator
   tool_calls:
-    - tool: "calculator"
-      params: { expression: "500-123" }
-  final_answer_contains: ["377"]
+  - tool: calculator
+    params:
+      expression: 500-123
+  final_answer_contains:
+  - '377'
   max_rounds: 2
 assertions:
   check_final_answer: true
   check_tool_sequence: true
   check_tool_params: true
-tags: ["calculator", "single-tool"]
+tags:
+- calculator
+- single-tool
+scene: general
+difficulty: easy
+priority: P1

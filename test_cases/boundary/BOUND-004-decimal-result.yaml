@@ -1,17 +1,26 @@
-id: "BOUND-004"
-name: "边界-无限小数结果"
+id: BOUND-004
+name: 边界-无限小数结果
 category: boundary
-description: "10/3 产生无限小数，验证浮点数精度处理"
-input: "10 / 3 等于多少？"
+description: 10/3 产生无限小数，验证浮点数精度处理
+input: 10 / 3 等于多少？
 expected:
-  tool_sequence: ["calculator"]
+  tool_sequence:
+  - calculator
   tool_calls:
-    - tool: "calculator"
-      params: { expression: "10/3" }
-  final_answer_contains: ["3.33"]
+  - tool: calculator
+    params:
+      expression: 10/3
+  final_answer_contains:
+  - '3.33'
   max_rounds: 2
 assertions:
   check_final_answer: true
   check_tool_sequence: true
   check_tool_params: true
-tags: ["calculator", "boundary", "floating-point"]
+tags:
+- calculator
+- boundary
+- floating-point
+scene: general
+difficulty: medium
+priority: P1

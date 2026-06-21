@@ -4,7 +4,7 @@ category: functional
 scene: multi_tool_planning
 difficulty: hard
 priority: P1
-description: 多工具规划预算分配
+description: 多工具规划预算分配。tool_calls为参考轨迹，LLM可能合理变化
 input: 总预算5000元住宿占40%交通占30%餐饮占30%各多少钱
 requires_llm: true
 requires_llm_reason: RuleBasedAgent 关键词匹配无法覆盖此场景
@@ -14,6 +14,14 @@ expected:
   - calculator
   - calculator
   max_rounds: 5
+  tool_calls:
+  - tool: calculator
+    params: &id001
+      expression: 参考表达式见input
+  - tool: calculator
+    params: *id001
+  - tool: calculator
+    params: *id001
 assertions:
   check_final_answer: false
   check_tool_sequence: true

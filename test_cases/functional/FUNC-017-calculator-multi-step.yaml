@@ -1,17 +1,25 @@
-id: "FUNC-017"
-name: "计算器-混合运算"
+id: FUNC-017
+name: 计算器-混合运算
 category: functional
-description: "多步混合运算 (1+2)*3"
-input: "(1 + 2) * 3 等于多少？"
+description: 多步混合运算 (1+2)*3
+input: (1 + 2) * 3 等于多少？
 expected:
-  tool_sequence: ["calculator"]
+  tool_sequence:
+  - calculator
   tool_calls:
-    - tool: "calculator"
-      params: { expression: "(1+2)*3" }
-  final_answer_contains: ["9"]
+  - tool: calculator
+    params:
+      expression: (1+2)*3
+  final_answer_contains:
+  - '9'
   max_rounds: 2
 assertions:
   check_final_answer: true
   check_tool_sequence: true
   check_tool_params: true
-tags: ["calculator", "multi-step"]
+tags:
+- calculator
+- multi-step
+scene: general
+difficulty: easy
+priority: P1

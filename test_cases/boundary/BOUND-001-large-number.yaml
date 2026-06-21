@@ -1,14 +1,22 @@
-id: "BOUND-001"
-name: "边界-超大数计算"
+id: BOUND-001
+name: 边界-超大数计算
 category: boundary
-description: "验证超大数计算不溢出"
-input: "9999999999 * 9999999999 等于多少？"
+description: 验证超大数计算不溢出
+input: 9999999999 * 9999999999 等于多少？
 expected:
-  tool_sequence: ["calculator"]
-  final_answer_contains: ["99999999980000000001"]
+  tool_sequence:
+  - calculator
+  final_answer_contains:
+  - '99999999980000000001'
   max_rounds: 2
 assertions:
   check_final_answer: true
   check_tool_sequence: true
   check_tool_params: false
-tags: ["calculator", "boundary", "large-number"]
+tags:
+- calculator
+- boundary
+- large-number
+scene: general
+difficulty: medium
+priority: P1

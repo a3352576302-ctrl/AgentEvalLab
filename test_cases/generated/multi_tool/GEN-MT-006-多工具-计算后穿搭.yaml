@@ -4,7 +4,7 @@ category: functional
 scene: multi_tool_planning
 difficulty: hard
 priority: P1
-description: 多工具规划计算后穿搭
+description: 多工具规划计算后穿搭。tool_calls为参考轨迹，LLM可能合理变化
 input: 如果北京35度和上海28度平均气温是多少这个温度穿什么
 requires_llm: true
 requires_llm_reason: RuleBasedAgent 关键词匹配无法覆盖此场景
@@ -13,6 +13,13 @@ expected:
   - calculator
   - knowledge
   max_rounds: 4
+  tool_calls:
+  - tool: calculator
+    params:
+      expression: 参考表达式见input
+  - tool: knowledge
+    params:
+      query: 参考查询词见input
 assertions:
   check_final_answer: false
   check_tool_sequence: true

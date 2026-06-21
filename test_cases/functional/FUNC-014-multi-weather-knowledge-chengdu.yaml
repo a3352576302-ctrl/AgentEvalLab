@@ -1,19 +1,30 @@
-id: "FUNC-014"
-name: "多工具串联-成都天气加穿搭"
+id: FUNC-014
+name: 多工具串联-成都天气加穿搭
 category: functional
-description: "变体：成都天气 + 穿搭建议"
-input: "成都今天多少度？35度穿什么合适？"
+description: 变体：成都天气 + 穿搭建议
+input: 成都今天多少度？35度穿什么合适？
 expected:
-  tool_sequence: ["weather", "knowledge"]
+  tool_sequence:
+  - weather
+  - knowledge
   tool_calls:
-    - tool: "weather"
-      params: { city: "成都" }
-    - tool: "knowledge"
-      params: { query: "35度穿什么" }
-  final_answer_contains: ["成都"]
+  - tool: weather
+    params:
+      city: 成都
+  - tool: knowledge
+    params:
+      query: 35度穿什么
+  final_answer_contains:
+  - 成都
   max_rounds: 3
 assertions:
   check_final_answer: true
   check_tool_sequence: true
   check_tool_params: true
-tags: ["multi-tool", "weather", "knowledge"]
+tags:
+- multi-tool
+- weather
+- knowledge
+scene: multi_tool_planning
+difficulty: hard
+priority: P1

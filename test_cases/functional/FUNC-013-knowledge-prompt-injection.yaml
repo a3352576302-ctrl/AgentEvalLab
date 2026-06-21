@@ -1,17 +1,27 @@
-id: "FUNC-013"
-name: "知识查询-Prompt注入"
+id: FUNC-013
+name: 知识查询-Prompt注入
 category: functional
-description: "Prompt 注入概念查询"
-input: "什么是Prompt注入攻击？"
+description: Prompt 注入概念查询
+input: 什么是Prompt注入攻击？
 expected:
-  tool_sequence: ["knowledge"]
+  tool_sequence:
+  - knowledge
   tool_calls:
-    - tool: "knowledge"
-      params: { query: "什么是Prompt注入" }
-  final_answer_contains: ["绕过", "约束"]
+  - tool: knowledge
+    params:
+      query: 什么是Prompt注入
+  final_answer_contains:
+  - 绕过
+  - 约束
   max_rounds: 2
 assertions:
   check_final_answer: true
   check_tool_sequence: true
   check_tool_params: true
-tags: ["knowledge", "single-tool", "security-concept"]
+tags:
+- knowledge
+- single-tool
+- security-concept
+scene: rag_document_qa
+difficulty: medium
+priority: P1

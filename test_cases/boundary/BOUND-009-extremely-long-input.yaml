@@ -1,13 +1,20 @@
-id: "BOUND-009"
-name: "边界-超长输入"
+id: BOUND-009
+name: 边界-超长输入
 category: boundary
-description: "超长输入不应导致 Agent 崩溃"
-input: "今天天气怎么样？今天天气怎么样？今天天气怎么样？今天天气怎么样？今天天气怎么样？今天天气怎么样？今天天气怎么样？今天天气怎么样？今天天气怎么样？今天天气怎么样？今天天气怎么样？今天天气怎么样？今天天气怎么样？今天天气怎么样？今天天气怎么样？今天天气怎么样？北京天气"
+description: 超长输入不应导致 Agent 崩溃
+input: 今天天气怎么样？今天天气怎么样？今天天气怎么样？今天天气怎么样？今天天气怎么样？今天天气怎么样？今天天气怎么样？今天天气怎么样？今天天气怎么样？今天天气怎么样？今天天气怎么样？今天天气怎么样？今天天气怎么样？今天天气怎么样？今天天气怎么样？今天天气怎么样？北京天气
 expected:
-  tool_sequence: ["weather"]
+  tool_sequence:
+  - weather
   max_rounds: 2
 assertions:
   check_final_answer: false
   check_tool_sequence: true
   check_tool_params: false
-tags: ["boundary", "long-input", "robustness"]
+tags:
+- boundary
+- long-input
+- robustness
+scene: general
+difficulty: medium
+priority: P1

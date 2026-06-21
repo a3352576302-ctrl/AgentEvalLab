@@ -1,19 +1,30 @@
-id: "ERROR-003"
-name: "异常-天气工具服务器错误"
+id: ERROR-003
+name: 异常-天气工具服务器错误
 category: error
-description: "weather 返回 HTTP 500 时 Agent 应告知用户服务器异常"
-input: "深圳今天天气怎么样？"
+description: weather 返回 HTTP 500 时 Agent 应告知用户服务器异常
+input: 深圳今天天气怎么样？
 fault:
-  tool: "weather"
-  type: "http_500"
+  tool: weather
+  type: http_500
 expected:
-  tool_sequence: ["weather"]
+  tool_sequence:
+  - weather
   max_rounds: 2
-  final_answer_contains: ["服务器", "失败"]
-  final_answer_not_contains: ["Traceback"]
+  final_answer_contains:
+  - 服务器
+  - 失败
+  final_answer_not_contains:
+  - Traceback
 assertions:
   check_final_answer: true
   check_tool_sequence: true
   check_tool_params: false
   check_final_answer_not_contains: true
-tags: ["error", "http-500", "fault-injection", "recovery"]
+tags:
+- error
+- http-500
+- fault-injection
+- recovery
+scene: general
+difficulty: hard
+priority: P1

@@ -4,13 +4,19 @@ category: functional
 scene: customer_service
 difficulty: medium
 priority: P1
-description: 多步计算——商品总价、折扣、运费
+description: 多步计算——商品总价、折扣、运费。tool_calls为参考轨迹，LLM可能合理变化
 input: 我买了3件衣服每件199元，2条裤子每条299元，总价多少？打8折后多少？
 expected:
   tool_sequence:
   - calculator
   - calculator
   max_rounds: 3
+  tool_calls:
+  - tool: calculator
+    params: &id001
+      expression: 参考表达式见input
+  - tool: calculator
+    params: *id001
 assertions:
   check_final_answer: false
   check_tool_sequence: true

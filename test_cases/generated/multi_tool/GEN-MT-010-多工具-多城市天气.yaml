@@ -4,7 +4,7 @@ category: functional
 scene: multi_tool_planning
 difficulty: hard
 priority: P1
-description: 多工具规划多城市天气
+description: 多工具规划多城市天气。tool_calls为参考轨迹，LLM可能合理变化
 input: 明天北京上海深圳三个城市天气分别怎么样
 requires_llm: true
 requires_llm_reason: RuleBasedAgent 关键词匹配无法覆盖此场景
@@ -14,6 +14,14 @@ expected:
   - weather
   - weather
   max_rounds: 5
+  tool_calls:
+  - tool: weather
+    params: &id001
+      city: 参考城市名见input
+  - tool: weather
+    params: *id001
+  - tool: weather
+    params: *id001
 assertions:
   check_final_answer: false
   check_tool_sequence: true

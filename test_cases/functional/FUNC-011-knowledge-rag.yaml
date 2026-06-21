@@ -1,17 +1,25 @@
-id: "FUNC-011"
-name: "知识查询-RAG"
+id: FUNC-011
+name: 知识查询-RAG
 category: functional
-description: "RAG 概念查询"
-input: "什么是RAG？请解释一下"
+description: RAG 概念查询
+input: 什么是RAG？请解释一下
 expected:
-  tool_sequence: ["knowledge"]
+  tool_sequence:
+  - knowledge
   tool_calls:
-    - tool: "knowledge"
-      params: { query: "什么是RAG" }
-  final_answer_contains: ["检索增强"]
+  - tool: knowledge
+    params:
+      query: 什么是RAG
+  final_answer_contains:
+  - 检索增强
   max_rounds: 2
 assertions:
   check_final_answer: true
   check_tool_sequence: true
   check_tool_params: true
-tags: ["knowledge", "single-tool"]
+tags:
+- knowledge
+- single-tool
+scene: rag_document_qa
+difficulty: easy
+priority: P1

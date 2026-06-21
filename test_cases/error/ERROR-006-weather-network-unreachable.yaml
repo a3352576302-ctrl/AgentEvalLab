@@ -1,19 +1,30 @@
-id: "ERROR-006"
-name: "异常-天气工具网络不可达"
+id: ERROR-006
+name: 异常-天气工具网络不可达
 category: error
-description: "weather 返回网络不可达时 Agent 应告知用户网络问题"
-input: "拉萨今天天气怎么样？"
+description: weather 返回网络不可达时 Agent 应告知用户网络问题
+input: 拉萨今天天气怎么样？
 fault:
-  tool: "weather"
-  type: "network_unreachable"
+  tool: weather
+  type: network_unreachable
 expected:
-  tool_sequence: ["weather"]
+  tool_sequence:
+  - weather
   max_rounds: 2
-  final_answer_contains: ["网络", "失败"]
-  final_answer_not_contains: ["Traceback"]
+  final_answer_contains:
+  - 网络
+  - 失败
+  final_answer_not_contains:
+  - Traceback
 assertions:
   check_final_answer: true
   check_tool_sequence: true
   check_tool_params: false
   check_final_answer_not_contains: true
-tags: ["error", "network-unreachable", "fault-injection", "recovery"]
+tags:
+- error
+- network-unreachable
+- fault-injection
+- recovery
+scene: general
+difficulty: hard
+priority: P1

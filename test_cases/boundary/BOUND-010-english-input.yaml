@@ -1,8 +1,8 @@
-id: "BOUND-010"
-name: "边界-英文输入"
+id: BOUND-010
+name: 边界-英文输入
 category: boundary
-description: "英文天气查询——当前 Agent 不支持英文，这是已知限制"
-input: "What is the weather in Beijing?"
+description: 英文天气查询——当前 Agent 不支持英文，这是已知限制
+input: What is the weather in Beijing?
 expected:
   tool_sequence: []
   max_rounds: 1
@@ -10,5 +10,11 @@ assertions:
   check_final_answer: false
   check_tool_sequence: true
   check_tool_params: false
-tags: ["boundary", "english", "known-limitation"]
-note: "当前 Agent 只支持中文输入，英文是已知限制"
+tags:
+- boundary
+- english
+- known-limitation
+note: 当前 Agent 只支持中文输入，英文是已知限制
+scene: general
+difficulty: medium
+priority: P1
