@@ -16,6 +16,8 @@ htmlcov/
 reports/*.html
 reports/*.xml
 reports/runs/
+reports/baselines/*.json
+!reports/baselines/.gitkeep
 
 # IDE
 .vscode/
