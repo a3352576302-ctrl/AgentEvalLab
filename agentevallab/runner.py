@@ -23,6 +23,7 @@ from agentevallab.agent import AgentProtocol
 from agentevallab.trajectory import AgentTrajectory
 from agentevallab.assertions import assert_trajectory, AssertionReport
 from agentevallab.fault_injector import fault_context
+from agentevallab.case_schema import validate_case
 
 
 # ============================================================
@@ -68,21 +69,24 @@ def load_yaml_case(filepath: str) -> dict[str, Any]:
         yaml.YAMLError    — YAML 格式错误
     """
     with open(filepath, "r", encoding="utf-8") as f:
-        data = yaml.safe_load(f)
+        raw_data = yaml.safe_load(f)
 
-    # 基础字段校验
-    required = ["id", "name", "input"]
-    for key in required:
-        if key not in data:
-            raise ValueError(f"YAML 文件 {filepath} 缺少必要字段: '{key}'")
+    # schema 校验 + 默认值填充（兼容旧 YAML）
+    schema_result = validate_case(raw_data)
 
-    # 确保 expected 和 assertions 有默认值
-    data.setdefault("expected", {})
-    data.setdefault("assertions", {})
-    data.setdefault("category", "unknown")
-    data.setdefault("tags", [])
+    if schema_result.errors:
+        raise ValueError(
+            f"YAML 文件 {filepath} 校验失败: {'; '.join(schema_result.errors)}"
+        )
 
-    return data
+    # 警告输出到 stderr（不阻止加载）
+    if schema_result.warnings:
+        import sys
+        for warning in schema_result.warnings:
+            print(f"[case_schema] WARNING [{os.path.basename(filepath)}]: {warning}",
+                  file=sys.stderr)
+
+    return schema_result.data
 
 
 # ============================================================
