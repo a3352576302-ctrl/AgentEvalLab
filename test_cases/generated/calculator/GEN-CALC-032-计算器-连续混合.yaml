@@ -4,8 +4,8 @@ category: functional
 scene: general
 difficulty: easy
 priority: P1
-description: 验证Agent正确处理连续混合场景
-input: 10 + 5 * 2 - 3 等于多少？
+description: 验证Agent处理连续混合
+input: 10+5*2-3
 expected:
   tool_sequence:
   - calculator

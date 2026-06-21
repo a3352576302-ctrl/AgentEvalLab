@@ -1,0 +1,20 @@
+id: GEN-BOUND-034
+name: 边界-天气关键词但非地理
+category: boundary
+scene: general
+difficulty: medium
+priority: P2
+description: 边界测试天气关键词但非地理
+input: 数字天气预测模型是什么
+requires_llm: true
+requires_llm_reason: RuleBasedAgent 关键词匹配无法覆盖此场景
+expected:
+  max_rounds: 2
+assertions:
+  check_final_answer: false
+  check_tool_sequence: false
+  check_tool_params: false
+tags:
+- boundary
+- semantic
+- generated

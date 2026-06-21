@@ -1,0 +1,20 @@
+id: GEN-BOUND-022
+name: 边界-日语输入
+category: boundary
+scene: general
+difficulty: medium
+priority: P2
+description: 边界测试日语输入
+input: 東京の天気はどうですか
+requires_llm: true
+requires_llm_reason: RuleBasedAgent 关键词匹配无法覆盖此场景
+expected:
+  max_rounds: 2
+assertions:
+  check_final_answer: false
+  check_tool_sequence: false
+  check_tool_params: false
+tags:
+- boundary
+- semantic
+- generated

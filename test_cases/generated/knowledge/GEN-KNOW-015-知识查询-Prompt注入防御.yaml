@@ -1,0 +1,22 @@
+id: GEN-KNOW-015
+name: 知识查询-Prompt注入防御
+category: functional
+scene: rag_document_qa
+difficulty: medium
+priority: P1
+description: 验证Agent处理Prompt注入防御
+input: 怎么防御Prompt注入攻击
+requires_llm: true
+requires_llm_reason: RuleBasedAgent 关键词匹配无法覆盖此场景
+expected:
+  tool_sequence:
+  - knowledge
+  max_rounds: 2
+assertions:
+  check_final_answer: false
+  check_tool_sequence: true
+  check_tool_params: false
+tags:
+- knowledge
+- semantic
+- generated

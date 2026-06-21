@@ -90,12 +90,12 @@ class TestCleanGenerated:
         result = _run_generator("--help")
         assert "--clean-generated" in result.stdout
 
-    def test_清理后重新生成数量正确(self):
-        """--clean-generated 后 generated 目录应有 83 条"""
+    def test_清理后重新生成数量达标(self):
+        """--clean-generated 后 generated 目录应 >=250"""
         import yaml, glob
         gen_dir = os.path.join(os.path.dirname(__file__), "..", "test_cases", "generated")
         yaml_files = glob.glob(os.path.join(gen_dir, "**/*.yaml"), recursive=True)
-        assert len(yaml_files) == 83, f"expected 83 generated, got {len(yaml_files)}"
+        assert len(yaml_files) >= 250, f"expected >=250 generated, got {len(yaml_files)}"
 
 
 class TestGenerationStability:

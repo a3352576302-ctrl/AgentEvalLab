@@ -1,0 +1,23 @@
+id: GEN-MT-006
+name: 多工具-计算后穿搭
+category: functional
+scene: multi_tool_planning
+difficulty: hard
+priority: P1
+description: 多工具规划计算后穿搭
+input: 如果北京35度和上海28度平均气温是多少这个温度穿什么
+requires_llm: true
+requires_llm_reason: RuleBasedAgent 关键词匹配无法覆盖此场景
+expected:
+  tool_sequence:
+  - calculator
+  - knowledge
+  max_rounds: 4
+assertions:
+  check_final_answer: false
+  check_tool_sequence: true
+  check_tool_params: false
+tags:
+- multi-tool
+- planning
+- generated

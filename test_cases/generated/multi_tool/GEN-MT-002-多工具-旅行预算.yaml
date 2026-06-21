@@ -1,0 +1,24 @@
+id: GEN-MT-002
+name: 多工具-旅行预算
+category: functional
+scene: multi_tool_planning
+difficulty: hard
+priority: P1
+description: 多工具规划旅行预算
+input: 去成都和拉萨各玩3天每天预算500元总共多少钱再查两个天气
+requires_llm: true
+requires_llm_reason: RuleBasedAgent 关键词匹配无法覆盖此场景
+expected:
+  tool_sequence:
+  - calculator
+  - weather
+  - weather
+  max_rounds: 5
+assertions:
+  check_final_answer: false
+  check_tool_sequence: true
+  check_tool_params: false
+tags:
+- multi-tool
+- planning
+- generated

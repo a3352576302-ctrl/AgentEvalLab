@@ -4,7 +4,7 @@ category: functional
 scene: general
 difficulty: easy
 priority: P1
-description: 验证Agent正确处理拉萨天气适合旅游吗
+description: 验证Agent处理拉萨天气适合旅游吗
 input: 拉萨天气适合旅游吗
 expected:
   tool_sequence:

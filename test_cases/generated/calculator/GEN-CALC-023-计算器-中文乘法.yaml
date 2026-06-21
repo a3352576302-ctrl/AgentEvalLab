@@ -1,0 +1,28 @@
+id: GEN-CALC-023
+name: 计算器-中文乘法
+category: functional
+scene: general
+difficulty: medium
+priority: P1
+description: 验证Agent处理中文乘法
+input: 123*456
+requires_llm: true
+requires_llm_reason: RuleBasedAgent 关键词匹配无法覆盖此场景
+expected:
+  tool_sequence:
+  - calculator
+  tool_calls:
+  - tool: calculator
+    params:
+      expression: 123*456
+  final_answer_contains_any:
+  - '56088'
+  max_rounds: 2
+assertions:
+  check_final_answer: true
+  check_tool_sequence: true
+  check_tool_params: true
+tags:
+- calculator
+- semantic
+- generated

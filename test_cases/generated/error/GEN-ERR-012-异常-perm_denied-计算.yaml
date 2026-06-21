@@ -1,0 +1,25 @@
+id: GEN-ERR-012
+name: 异常-perm_denied-计算
+category: error
+scene: general
+difficulty: hard
+priority: P1
+description: 验证Agent在权限拒绝时提示用户
+input: 999*999
+requires_llm: true
+requires_llm_reason: RuleBasedAgent 关键词匹配无法覆盖此场景
+expected:
+  tool_sequence:
+  - calculator
+  max_rounds: 2
+assertions:
+  check_final_answer: false
+  check_tool_sequence: true
+  check_tool_params: false
+tags:
+- error
+- permission_denied
+- generated
+fault:
+  tool: calculator
+  type: permission_denied

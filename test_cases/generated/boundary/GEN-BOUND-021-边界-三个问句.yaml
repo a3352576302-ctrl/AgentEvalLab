@@ -1,0 +1,18 @@
+id: GEN-BOUND-021
+name: 边界-三个问句
+category: boundary
+scene: general
+difficulty: medium
+priority: P2
+description: 边界测试三个问句
+input: 今天星期几告诉我天气1+1等于多少
+expected:
+  max_rounds: 2
+assertions:
+  check_final_answer: false
+  check_tool_sequence: false
+  check_tool_params: false
+tags:
+- boundary
+- multi-tool
+- generated

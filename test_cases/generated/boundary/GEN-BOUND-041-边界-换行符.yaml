@@ -1,0 +1,20 @@
+id: GEN-BOUND-041
+name: 边界-换行符
+category: boundary
+scene: general
+difficulty: medium
+priority: P2
+description: 边界测试换行符
+input: '北京
+
+  天气'
+expected:
+  max_rounds: 2
+assertions:
+  check_final_answer: false
+  check_tool_sequence: false
+  check_tool_params: false
+tags:
+- boundary
+- single-tool
+- generated

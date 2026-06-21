@@ -1,0 +1,23 @@
+id: GEN-MT-023
+name: 多工具-旅行建议
+category: functional
+scene: multi_tool_planning
+difficulty: hard
+priority: P1
+description: 多工具规划旅行建议
+input: 上海周末天气好吗适合短途旅行吗有什么推荐
+requires_llm: true
+requires_llm_reason: RuleBasedAgent 关键词匹配无法覆盖此场景
+expected:
+  tool_sequence:
+  - weather
+  - knowledge
+  max_rounds: 4
+assertions:
+  check_final_answer: false
+  check_tool_sequence: true
+  check_tool_params: false
+tags:
+- multi-tool
+- planning
+- generated

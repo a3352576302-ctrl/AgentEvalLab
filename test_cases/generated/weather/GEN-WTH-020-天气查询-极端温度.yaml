@@ -1,0 +1,22 @@
+id: GEN-WTH-020
+name: 天气查询-极端温度
+category: functional
+scene: general
+difficulty: medium
+priority: P1
+description: 验证Agent处理哈尔滨零下30度怎么穿
+input: 哈尔滨零下30度怎么穿
+requires_llm: true
+requires_llm_reason: RuleBasedAgent 关键词匹配无法覆盖此场景
+expected:
+  tool_sequence:
+  - weather
+  max_rounds: 2
+assertions:
+  check_final_answer: false
+  check_tool_sequence: true
+  check_tool_params: false
+tags:
+- weather
+- multi-tool
+- generated

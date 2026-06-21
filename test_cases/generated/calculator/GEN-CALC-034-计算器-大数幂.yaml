@@ -4,8 +4,8 @@ category: functional
 scene: general
 difficulty: easy
 priority: P1
-description: 验证Agent正确处理大数幂场景
-input: 2 ** 10 等于多少？
+description: 验证Agent处理大数幂
+input: 2**10
 expected:
   tool_sequence:
   - calculator

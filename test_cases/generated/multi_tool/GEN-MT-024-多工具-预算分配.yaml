@@ -1,0 +1,22 @@
+id: GEN-MT-024
+name: 多工具-预算分配
+category: functional
+scene: multi_tool_planning
+difficulty: hard
+priority: P1
+description: 多工具规划预算分配
+input: 总预算5000元住宿占40%交通占30%餐饮占30%各多少钱
+requires_llm: true
+requires_llm_reason: RuleBasedAgent 关键词匹配无法覆盖此场景
+expected:
+  tool_sequence:
+  - calculator
+  max_rounds: 3
+assertions:
+  check_final_answer: false
+  check_tool_sequence: true
+  check_tool_params: false
+tags:
+- multi-tool
+- planning
+- generated

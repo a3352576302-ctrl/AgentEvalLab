@@ -1,0 +1,22 @@
+id: GEN-TURN-004
+name: 多轮-前后矛盾
+category: functional
+scene: multi_turn
+difficulty: hard
+priority: P2
+description: 多轮对话前后矛盾
+input: 深圳今天多少度不对我问的是深圳昨天多少度
+requires_llm: true
+requires_llm_reason: RuleBasedAgent 关键词匹配无法覆盖此场景
+expected:
+  tool_sequence:
+  - weather
+  - weather
+  max_rounds: 4
+assertions:
+  check_final_answer: false
+  check_tool_sequence: true
+  check_tool_params: false
+tags:
+- multi_turn
+- generated

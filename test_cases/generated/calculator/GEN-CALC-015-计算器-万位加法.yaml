@@ -1,0 +1,26 @@
+id: GEN-CALC-015
+name: 计算器-万位加法
+category: functional
+scene: general
+difficulty: easy
+priority: P1
+description: 验证Agent处理万位加法
+input: 99999+1
+expected:
+  tool_sequence:
+  - calculator
+  tool_calls:
+  - tool: calculator
+    params:
+      expression: 99999+1
+  final_answer_contains_any:
+  - '100000'
+  max_rounds: 2
+assertions:
+  check_final_answer: true
+  check_tool_sequence: true
+  check_tool_params: true
+tags:
+- calculator
+- single-tool
+- generated

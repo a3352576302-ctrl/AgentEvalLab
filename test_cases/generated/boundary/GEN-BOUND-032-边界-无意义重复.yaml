@@ -1,0 +1,18 @@
+id: GEN-BOUND-032
+name: 边界-无意义重复
+category: boundary
+scene: general
+difficulty: medium
+priority: P2
+description: 边界测试无意义重复
+input: aaaaaaabbbbbbbcccccccdddddddeeeeeee
+expected:
+  max_rounds: 2
+assertions:
+  check_final_answer: false
+  check_tool_sequence: false
+  check_tool_params: false
+tags:
+- boundary
+- single-tool
+- generated

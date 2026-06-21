@@ -4,8 +4,8 @@ category: functional
 scene: general
 difficulty: medium
 priority: P1
-description: 验证Agent正确处理深圳今天多少度，穿什么衣服合适
-input: 深圳今天多少度，穿什么衣服合适
+description: 验证Agent处理深圳今天多少度穿什么
+input: 深圳今天多少度穿什么
 expected:
   tool_sequence:
   - weather

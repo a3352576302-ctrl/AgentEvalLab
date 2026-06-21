@@ -1,0 +1,22 @@
+id: GEN-TURN-009
+name: 多轮-假设追问
+category: functional
+scene: multi_turn
+difficulty: hard
+priority: P2
+description: 多轮对话假设追问
+input: 如果北京明天下雨温度下降5度需要穿什么
+requires_llm: true
+requires_llm_reason: RuleBasedAgent 关键词匹配无法覆盖此场景
+expected:
+  tool_sequence:
+  - weather
+  - knowledge
+  max_rounds: 4
+assertions:
+  check_final_answer: false
+  check_tool_sequence: true
+  check_tool_params: false
+tags:
+- multi_turn
+- generated

@@ -1,0 +1,25 @@
+id: GEN-ERR-038
+name: 异常-恢复-计算500后正常
+category: error
+scene: general
+difficulty: hard
+priority: P1
+description: 计算器500后正常
+input: 3*7
+requires_llm: true
+requires_llm_reason: RuleBasedAgent 关键词匹配无法覆盖此场景
+expected:
+  tool_sequence:
+  - calculator
+  max_rounds: 2
+assertions:
+  check_final_answer: false
+  check_tool_sequence: true
+  check_tool_params: false
+tags:
+- error
+- http_500
+- generated
+fault:
+  tool: calculator
+  type: http_500

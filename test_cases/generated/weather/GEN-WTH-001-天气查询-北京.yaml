@@ -4,7 +4,7 @@ category: functional
 scene: general
 difficulty: easy
 priority: P1
-description: 验证Agent正确处理北京今天天气怎么样
+description: 验证Agent处理北京今天天气怎么样
 input: 北京今天天气怎么样
 expected:
   tool_sequence:

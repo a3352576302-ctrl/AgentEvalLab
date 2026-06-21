@@ -1,0 +1,25 @@
+id: GEN-ERR-043
+name: 异常-错误-所有工具都超时
+category: error
+scene: general
+difficulty: hard
+priority: P1
+description: 多工具场景首个超时
+input: 帮我计算1+1再查北京天气
+requires_llm: true
+requires_llm_reason: RuleBasedAgent 关键词匹配无法覆盖此场景
+expected:
+  tool_sequence:
+  - calculator
+  max_rounds: 2
+assertions:
+  check_final_answer: false
+  check_tool_sequence: true
+  check_tool_params: false
+tags:
+- error
+- timeout
+- generated
+fault:
+  tool: calculator
+  type: timeout

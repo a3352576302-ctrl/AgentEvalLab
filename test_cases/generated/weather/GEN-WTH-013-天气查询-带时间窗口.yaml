@@ -1,0 +1,20 @@
+id: GEN-WTH-013
+name: 天气查询-带时间窗口
+category: functional
+scene: general
+difficulty: easy
+priority: P1
+description: 验证Agent处理北京未来三天天气
+input: 北京未来三天天气
+expected:
+  tool_sequence:
+  - weather
+  max_rounds: 2
+assertions:
+  check_final_answer: true
+  check_tool_sequence: true
+  check_tool_params: false
+tags:
+- weather
+- single-tool
+- generated

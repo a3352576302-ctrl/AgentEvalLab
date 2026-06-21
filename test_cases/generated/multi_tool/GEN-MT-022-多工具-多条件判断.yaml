@@ -1,0 +1,23 @@
+id: GEN-MT-022
+name: 多工具-多条件判断
+category: functional
+scene: multi_tool_planning
+difficulty: hard
+priority: P1
+description: 多工具规划多条件判断
+input: 北京今天温度和湿度是多少适合晾衣服吗
+requires_llm: true
+requires_llm_reason: RuleBasedAgent 关键词匹配无法覆盖此场景
+expected:
+  tool_sequence:
+  - weather
+  - knowledge
+  max_rounds: 4
+assertions:
+  check_final_answer: false
+  check_tool_sequence: true
+  check_tool_params: false
+tags:
+- multi-tool
+- planning
+- generated

@@ -1,0 +1,22 @@
+id: GEN-WTH-016
+name: 天气查询-问空气质量
+category: functional
+scene: general
+difficulty: medium
+priority: P1
+description: 验证Agent处理北京今天空气好不好
+input: 北京今天空气好不好
+requires_llm: true
+requires_llm_reason: RuleBasedAgent 关键词匹配无法覆盖此场景
+expected:
+  tool_sequence:
+  - weather
+  max_rounds: 2
+assertions:
+  check_final_answer: false
+  check_tool_sequence: true
+  check_tool_params: false
+tags:
+- weather
+- semantic
+- generated

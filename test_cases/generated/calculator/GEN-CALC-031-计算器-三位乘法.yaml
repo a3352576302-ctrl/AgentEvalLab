@@ -4,8 +4,8 @@ category: functional
 scene: general
 difficulty: easy
 priority: P1
-description: 验证Agent正确处理三位乘法场景
-input: 345 * 678 等于多少？
+description: 验证Agent处理三位乘法
+input: 345*678
 expected:
   tool_sequence:
   - calculator

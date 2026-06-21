@@ -1,0 +1,22 @@
+id: GEN-TURN-001
+name: 多轮-追问天气
+category: functional
+scene: multi_turn
+difficulty: hard
+priority: P2
+description: 多轮对话追问天气
+input: 北京今天天气怎么样那明天呢
+requires_llm: true
+requires_llm_reason: RuleBasedAgent 关键词匹配无法覆盖此场景
+expected:
+  tool_sequence:
+  - weather
+  - weather
+  max_rounds: 4
+assertions:
+  check_final_answer: false
+  check_tool_sequence: true
+  check_tool_params: false
+tags:
+- multi_turn
+- generated

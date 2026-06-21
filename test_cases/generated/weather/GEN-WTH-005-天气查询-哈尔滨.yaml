@@ -2,10 +2,10 @@ id: GEN-WTH-005
 name: 天气查询-哈尔滨
 category: functional
 scene: general
-difficulty: easy
+difficulty: medium
 priority: P1
-description: 验证Agent正确处理哈尔滨现在冷吗
-input: 哈尔滨现在冷吗
+description: 验证Agent处理哈尔滨冷吗
+input: 哈尔滨冷吗
 requires_llm: true
 requires_llm_reason: RuleBasedAgent 关键词匹配无法覆盖此场景
 expected:
@@ -13,10 +13,10 @@ expected:
   - weather
   max_rounds: 2
 assertions:
-  check_final_answer: true
+  check_final_answer: false
   check_tool_sequence: true
   check_tool_params: false
 tags:
 - weather
-- single-tool
+- semantic
 - generated

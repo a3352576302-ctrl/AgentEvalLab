@@ -1,0 +1,25 @@
+id: GEN-ERR-010
+name: 异常-empty-天气
+category: error
+scene: general
+difficulty: hard
+priority: P1
+description: 验证Agent在查不到数据时不编造
+input: 三亚天气
+requires_llm: true
+requires_llm_reason: RuleBasedAgent 关键词匹配无法覆盖此场景
+expected:
+  tool_sequence:
+  - weather
+  max_rounds: 2
+assertions:
+  check_final_answer: false
+  check_tool_sequence: true
+  check_tool_params: false
+tags:
+- error
+- empty_result
+- generated
+fault:
+  tool: weather
+  type: empty_result

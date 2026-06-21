@@ -1,0 +1,26 @@
+id: GEN-CALC-029
+name: 计算器-括号乘积
+category: functional
+scene: general
+difficulty: easy
+priority: P1
+description: 验证Agent处理括号乘积
+input: (1+2)*(3+4)
+expected:
+  tool_sequence:
+  - calculator
+  tool_calls:
+  - tool: calculator
+    params:
+      expression: (1+2)*(3+4)
+  final_answer_contains_any:
+  - '21'
+  max_rounds: 2
+assertions:
+  check_final_answer: true
+  check_tool_sequence: true
+  check_tool_params: true
+tags:
+- calculator
+- single-tool
+- generated

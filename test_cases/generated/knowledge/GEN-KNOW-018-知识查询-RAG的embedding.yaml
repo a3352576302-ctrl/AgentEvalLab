@@ -1,0 +1,22 @@
+id: GEN-KNOW-018
+name: 知识查询-RAG的embedding
+category: functional
+scene: rag_document_qa
+difficulty: medium
+priority: P1
+description: 验证Agent处理RAG的embedding
+input: RAG里的embedding是什么
+requires_llm: true
+requires_llm_reason: RuleBasedAgent 关键词匹配无法覆盖此场景
+expected:
+  tool_sequence:
+  - knowledge
+  max_rounds: 2
+assertions:
+  check_final_answer: false
+  check_tool_sequence: true
+  check_tool_params: false
+tags:
+- knowledge
+- semantic
+- generated

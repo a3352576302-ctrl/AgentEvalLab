@@ -1,0 +1,20 @@
+id: GEN-BOUND-026
+name: 边界-错别字
+category: boundary
+scene: general
+difficulty: medium
+priority: P2
+description: 边界测试错别字
+input: 北襟今天天气怎么样
+requires_llm: true
+requires_llm_reason: RuleBasedAgent 关键词匹配无法覆盖此场景
+expected:
+  max_rounds: 2
+assertions:
+  check_final_answer: false
+  check_tool_sequence: false
+  check_tool_params: false
+tags:
+- boundary
+- semantic
+- generated

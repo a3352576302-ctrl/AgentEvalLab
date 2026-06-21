@@ -1,0 +1,21 @@
+id: GEN-HTTP-008
+name: HTTPAgent-部分工具失败
+category: functional
+scene: http_agent
+difficulty: hard
+priority: P2
+description: HTTPAgent 部分工具失败
+input: 查北京的天气但知识库可能宕机
+requires_llm: true
+requires_llm_reason: RuleBasedAgent 关键词匹配无法覆盖此场景
+expected:
+  tool_sequence:
+  - weather
+  max_rounds: 2
+assertions:
+  check_final_answer: false
+  check_tool_sequence: true
+  check_tool_params: false
+tags:
+- http_agent
+- generated

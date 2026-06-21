@@ -1,0 +1,21 @@
+id: GEN-TURN-003
+name: 多轮-迭代优化
+category: functional
+scene: multi_turn
+difficulty: hard
+priority: P2
+description: 多轮对话迭代优化
+input: 什么是RAG它的chunk size一般多大为什么不能太大
+requires_llm: true
+requires_llm_reason: RuleBasedAgent 关键词匹配无法覆盖此场景
+expected:
+  tool_sequence:
+  - knowledge
+  max_rounds: 3
+assertions:
+  check_final_answer: false
+  check_tool_sequence: true
+  check_tool_params: false
+tags:
+- multi_turn
+- generated

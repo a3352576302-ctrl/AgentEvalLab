@@ -4,8 +4,10 @@ category: boundary
 scene: general
 difficulty: medium
 priority: P2
-description: 边界测试：纯英文知识
-input: What is TCP?
+description: 边界测试纯英文知识
+input: What is TCP
+requires_llm: true
+requires_llm_reason: RuleBasedAgent 关键词匹配无法覆盖此场景
 expected:
   max_rounds: 2
 assertions:
@@ -14,5 +16,5 @@ assertions:
   check_tool_params: false
 tags:
 - boundary
-- single-tool
+- semantic
 - generated

@@ -1,0 +1,26 @@
+id: GEN-CALC-044
+name: 计算器-阶乘样式
+category: functional
+scene: general
+difficulty: easy
+priority: P1
+description: 验证Agent处理阶乘样式
+input: 5*4*3*2*1
+expected:
+  tool_sequence:
+  - calculator
+  tool_calls:
+  - tool: calculator
+    params:
+      expression: 5*4*3*2*1
+  final_answer_contains_any:
+  - '120'
+  max_rounds: 2
+assertions:
+  check_final_answer: true
+  check_tool_sequence: true
+  check_tool_params: true
+tags:
+- calculator
+- single-tool
+- generated

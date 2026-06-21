@@ -1,0 +1,24 @@
+id: GEN-MT-032
+name: 多工具-连续天气查询
+category: functional
+scene: multi_tool_planning
+difficulty: hard
+priority: P1
+description: 多工具规划连续天气查询
+input: 查北京天气再查上海天气再查深圳天气
+requires_llm: true
+requires_llm_reason: RuleBasedAgent 关键词匹配无法覆盖此场景
+expected:
+  tool_sequence:
+  - weather
+  - weather
+  - weather
+  max_rounds: 5
+assertions:
+  check_final_answer: false
+  check_tool_sequence: true
+  check_tool_params: false
+tags:
+- multi-tool
+- planning
+- generated

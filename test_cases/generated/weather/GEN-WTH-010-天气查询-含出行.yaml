@@ -4,7 +4,7 @@ category: functional
 scene: general
 difficulty: easy
 priority: P1
-description: 验证Agent正确处理哈尔滨天气适合出去玩吗
+description: 验证Agent处理哈尔滨天气适合出去玩吗
 input: 哈尔滨天气适合出去玩吗
 expected:
   tool_sequence:

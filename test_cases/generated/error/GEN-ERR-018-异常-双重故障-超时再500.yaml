@@ -1,0 +1,25 @@
+id: GEN-ERR-018
+name: 异常-双重故障-超时再500
+category: error
+scene: general
+difficulty: hard
+priority: P1
+description: 先超时后500，验证连续降级
+input: 北京天气
+requires_llm: true
+requires_llm_reason: RuleBasedAgent 关键词匹配无法覆盖此场景
+expected:
+  tool_sequence:
+  - weather
+  max_rounds: 2
+assertions:
+  check_final_answer: false
+  check_tool_sequence: true
+  check_tool_params: false
+tags:
+- error
+- timeout
+- generated
+fault:
+  tool: weather
+  type: timeout

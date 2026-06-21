@@ -1,0 +1,20 @@
+id: GEN-HTTP-006
+name: HTTPAgent-超时处理
+category: functional
+scene: http_agent
+difficulty: hard
+priority: P2
+description: HTTPAgent 超时处理
+input: sleep_10_seconds
+requires_llm: true
+requires_llm_reason: RuleBasedAgent 关键词匹配无法覆盖此场景
+expected:
+  tool_sequence: []
+  max_rounds: 1
+assertions:
+  check_final_answer: false
+  check_tool_sequence: false
+  check_tool_params: false
+tags:
+- http_agent
+- generated

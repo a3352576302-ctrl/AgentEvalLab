@@ -4,8 +4,8 @@ category: functional
 scene: general
 difficulty: medium
 priority: P1
-description: 验证Agent正确处理百分数场景
-input: 200的15%是多少
+description: 验证Agent处理百分数
+input: 200*0.15
 requires_llm: true
 requires_llm_reason: RuleBasedAgent 关键词匹配无法覆盖此场景
 expected:

@@ -1,0 +1,23 @@
+id: GEN-TURN-008
+name: 多轮-多话题切换
+category: functional
+scene: multi_turn
+difficulty: hard
+priority: P2
+description: 多轮对话多话题切换
+input: 北京天气怎么样顺便说一下什么是RAG再说一下1+1
+requires_llm: true
+requires_llm_reason: RuleBasedAgent 关键词匹配无法覆盖此场景
+expected:
+  tool_sequence:
+  - weather
+  - knowledge
+  - calculator
+  max_rounds: 5
+assertions:
+  check_final_answer: false
+  check_tool_sequence: true
+  check_tool_params: false
+tags:
+- multi_turn
+- generated

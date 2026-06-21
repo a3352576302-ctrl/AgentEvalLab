@@ -4,7 +4,7 @@ category: functional
 scene: general
 difficulty: easy
 priority: P1
-description: 验证Agent正确处理成都天气如何
+description: 验证Agent处理成都天气如何
 input: 成都天气如何
 expected:
   tool_sequence:

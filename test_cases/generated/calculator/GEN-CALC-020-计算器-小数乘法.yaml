@@ -1,0 +1,26 @@
+id: GEN-CALC-020
+name: 计算器-小数乘法
+category: functional
+scene: general
+difficulty: easy
+priority: P1
+description: 验证Agent处理小数乘法
+input: 1.5*2.0
+expected:
+  tool_sequence:
+  - calculator
+  tool_calls:
+  - tool: calculator
+    params:
+      expression: 1.5*2.0
+  final_answer_contains_any:
+  - '3.0'
+  max_rounds: 2
+assertions:
+  check_final_answer: true
+  check_tool_sequence: true
+  check_tool_params: true
+tags:
+- calculator
+- single-tool
+- generated

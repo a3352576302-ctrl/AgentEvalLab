@@ -4,7 +4,7 @@ category: functional
 scene: general
 difficulty: easy
 priority: P1
-description: 验证Agent正确处理上海今天多少度
+description: 验证Agent处理上海今天多少度
 input: 上海今天多少度
 expected:
   tool_sequence:

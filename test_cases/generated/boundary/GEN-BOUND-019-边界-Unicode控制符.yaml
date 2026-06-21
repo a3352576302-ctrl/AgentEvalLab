@@ -1,0 +1,20 @@
+id: GEN-BOUND-019
+name: 边界-Unicode控制符
+category: boundary
+scene: general
+difficulty: medium
+priority: P2
+description: 边界测试Unicode控制符
+input: hello\\x00world
+requires_llm: true
+requires_llm_reason: RuleBasedAgent 关键词匹配无法覆盖此场景
+expected:
+  max_rounds: 2
+assertions:
+  check_final_answer: false
+  check_tool_sequence: false
+  check_tool_params: false
+tags:
+- boundary
+- semantic
+- generated
