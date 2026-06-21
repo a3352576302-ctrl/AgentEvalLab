@@ -31,3 +31,28 @@
 - 空字符串 `input: ""`（BOUND-003）被误判为缺失 → 放宽校验，只拦截 None 和不存在
 
 **下一步：** 阶段 2 — 失败归因分类器（error_classifier.py）
+
+---
+
+## 2026-06-21：阶段 2 — 失败归因分类器 ✅
+
+**做了什么：**
+- 新增 `agentevallab/error_classifier.py`：17 种错误标签
+- 三大类：断言失败（9 种）、Provider 错误（5 种）、特殊模式（3 种）
+- `classify_error(result)` → 单条归因
+- `classify_results(results)` → 批量统计
+- `get_taxonomy_description(label)` → 中文说明
+
+**为什么这样做：**
+- 失败不只是 pass/fail——面试官问"为什么失败"时，你能答出具体类型
+- 报告系统（阶段 4）需要结构化归因数据
+- 区分"模型答错了"和"API 挂了"和"断言太严"
+
+**改了哪些文件：**
+- 新增：agentevallab/error_classifier.py
+- 新增：tests/test_error_classifier.py（16 条测试）
+
+**测试结果：**
+- 222 passed (+16)，0 failed
+
+**下一步：** 阶段 3 — 真实 API 稳定性（retry + backoff + run_store）
