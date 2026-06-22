@@ -199,8 +199,10 @@ class TestKnowledge:
         assert result.success is True
         assert "OSI" in result.data["answer"]
 
-    def test_完全无关联返回候选(self):
-        """查询完全无关联时返回候选提示"""
+    def test_完全无关联返回候选提示(self):
+        """查询完全无关联时返回候选提示，包含'知识库'关键词"""
         result = tool_knowledge("量子计算原理")
         assert result.success is False
         assert "知识库" in result.error
+        assert "未找到" in result.error
+        assert "重试" in result.error  # 候选提示帮助 LLM 重试而非反复调用

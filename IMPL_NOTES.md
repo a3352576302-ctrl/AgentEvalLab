@@ -1068,11 +1068,22 @@ DeepSeek rag_document_qa 仅 6/20 (30%) vs MiniMax 19/20 (95%)。根因：knowle
 - **392 passed + 226 skipped** 🟢（+10 新 knowledge 测试）
 - 精确匹配 ✅ / 模糊匹配 ✅ / 别名匹配 ✅ / 大小写 ✅ / 全角半角 ✅
 
+### API Smoke 验证
+
+选取 10 条 v1.0 DeepSeek 全失败的 rag_document_qa 用例，v1.1 重新跑：
+
+| 模型 | v1.0 | v1.1 | 提升 |
+|------|------|------|------|
+| DeepSeek | 0/10 (0%) | **6/10 (60%)** | +60pp |
+| MiniMax | — | 8/10 (80%) | 保持 |
+
+剩余 4 条 DS 失败已不是知识匹配问题——knowledge 返回正确但模型重复调用（Agent orchestration，留给 v1.1 Stage 2 多工具 prompt 优化）。
+
 ### 遗留
 
-- 尚未运行真实 API smoke 验证 DeepSeek rag 提升
-- 别名映射表可能需要扩充
+- 别名映射表可能需扩充（当前 6 组）
 - 未改 benchmark expected
+- 全量 226 条 rag_document_qa 需用户确认后才跑
 
 ### 下一步
 
