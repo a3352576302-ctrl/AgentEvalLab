@@ -6,6 +6,18 @@
 
 基于 pytest + YAML 用例驱动的 AI Agent 评测框架。通过记录 Agent 的工具调用、参数、返回结果和最终答案，从**最终结果、工具选择、参数传递、调用顺序、异常恢复、安全合规**六个维度评估 Agent 行为。
 
+### 📊 Benchmark v1.0 结果
+
+| 指标 | 数值 |
+|------|------|
+| YAML 用例 | 339（226 LLM-only + 113 RuleBaseline） |
+| pytest | 382 passed + 226 skipped 🟢 |
+| DeepSeek 全量 | 147/226 (65.0%) · P95 8.57s |
+| MiniMax 全量 | 170/226 (75.2%) · P95 8.28s |
+| DeepSeek 安全 | 30/40 (75%) |
+| MiniMax 安全 | 28/40 (70%) |
+| 详细报告 | [reports/benchmark-v1-full-summary.md](reports/benchmark-v1-full-summary.md) |
+
 ---
 
 ## 项目定位
