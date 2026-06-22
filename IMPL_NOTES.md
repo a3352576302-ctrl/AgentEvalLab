@@ -1088,3 +1088,49 @@ DeepSeek rag_document_qa 仅 6/20 (30%) vs MiniMax 19/20 (95%)。根因：knowle
 ### 下一步
 
 v1.1 Stage 2：multi-tool prompt 策略优化（pending 用户确认）
+
+---
+
+## v1.1 Stage 2：Multi-tool Prompt + Orchestration 优化
+
+**日期：** 2026-06-22
+
+### 问题分析
+
+Stage 1 剩余 4 条 rag 失败 + DS multi_tool_planning 21/35 失败，均属编排问题：
+
+| 类型 | 数量 | 模式 |
+|------|------|------|
+| knowledge 重复调用 | 4 | 第一次返回有效结果，模型仍重复 2-4 次 |
+| multi-tool 不完整 | 21 | 模型只调 1 个工具就停止，缺少后续步骤 |
+
+### 实现
+
+1. **System Prompt 优化**（`llm_agent.py`）：
+   - 明确：穿搭/建议类问题必须调 knowledge
+   - 明确：多子任务必须完成所有工具调用
+   - 明确：工具返回有效结果后直接回答，不重复
+
+2. **Knowledge 级去重守卫**（`llm_agent.py` run 方法）：
+   - knowledge 工具：同一轮第 2 次调用返回 cached 提示
+   - 其他工具：同一 tool+params 去重
+
+### 验证
+
+- **392 passed + 226 skipped** 🟢
+- DS 14 条 smoke: Stage 1 有 3 条 MT 改善(003/005/008)，但 prompt+dedup 总体提升有限
+- knowledge 重复从 3-4 次降到 2 次，但仍超 expected max_rounds=2
+
+### 诚实结论
+
+prompt 和 orchestration 层优化对通过率提升有限。根因在于：
+
+1. 知识库覆盖不足（无 "chunk策略" "RAG vs 微调" "Agent ReAct" 条目）
+2. 模型工具选择非确定性（同一输入两次跑出不同 tool_sequence）
+3. 部分 "失败" 实为模型答案语义正确但 tool_sequence 不同（如 MT-029: knowledge→calculator 而非 calculator→knowledge）
+
+**不建议继续做 Stage 3 安全拒答增强，建议回到知识库扩展和语义等价断言方向。**
+
+### 下一步
+
+由用户决定：知识库内容扩展 / LLM-as-Judge 语义等价 / 直接进入简历投递

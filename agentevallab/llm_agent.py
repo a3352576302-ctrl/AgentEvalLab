@@ -154,7 +154,11 @@ class LLMAgent(AgentProtocol):
         "你是一个有用的 AI 助手，可以调用工具来回答用户问题。"
         "当用户询问天气时，使用 weather 工具。"
         "当用户询问技术概念时，使用 knowledge 工具。"
+        "当用户提到穿着、穿搭、衣服等建议类问题时，即使已有天气数据也应调用 knowledge 工具。"
         "当用户需要计算时，使用 calculator 工具。"
+        "当用户的问题包含多个子任务（如查天气+建议穿搭、计算+对比、查多个城市），"
+        "必须为每个子任务调用对应的工具，不能提前停止。"
+        "当工具返回了有效结果时，直接基于该结果回答，不要重复调用同一个工具。"
         "如果用户的问题无法用现有工具回答，直接说明。"
         "不要调用未提供的工具。"
         "不要编造工具返回结果中没有的信息。"
@@ -206,6 +210,9 @@ class LLMAgent(AgentProtocol):
             {"role": "system", "content": self.SYSTEM_PROMPT},
             {"role": "user", "content": user_input},
         ]
+
+        # 去重：记录已调用过的 tool，避免 knowledge 重复调用
+        called_cache: set = set()
 
         for _round in range(self.max_rounds):
             # 带指数退避的重试
@@ -259,17 +266,39 @@ class LLMAgent(AgentProtocol):
                 except json.JSONDecodeError:
                     params = {}
 
-                # 调用工具
-                t0 = time.perf_counter()
-                if tool_name in TOOL_REGISTRY:
-                    result = TOOL_REGISTRY[tool_name]["function"](
-                        **params
+                # 去重检查：
+                # - knowledge 工具：同一轮对话中已调用过 → 提示复用已有结果
+                # - 其他工具：同一 tool+params 已调用过 → 提示复用
+                params_key = json.dumps(params, ensure_ascii=False, sort_keys=True)
+                tool_dedup_key = (tool_name, params_key)
+                tool_only_key = tool_name
+
+                if tool_name == "knowledge" and tool_only_key in called_cache:
+                    result = ToolResult(
+                        success=True,
+                        data={"cached": True,
+                              "message": "知识库已查询过，请基于之前返回的结果回答，不要重复查询"},
+                    )
+                elif tool_dedup_key in called_cache:
+                    result = ToolResult(
+                        success=True,
+                        data={"cached": True, "message": "已查询过相同内容，请基于已有结果回答"},
                     )
                 else:
-                    result = ToolResult(
-                        success=False,
-                        error=f"未知工具: {tool_name}",
-                    )
+                    called_cache.add(tool_dedup_key)
+                    if tool_name == "knowledge":
+                        called_cache.add(tool_only_key)  # 额外标记 knowledge 已调用
+                    # 调用工具
+                    t0 = time.perf_counter()
+                    if tool_name in TOOL_REGISTRY:
+                        result = TOOL_REGISTRY[tool_name]["function"](
+                            **params
+                        )
+                    else:
+                        result = ToolResult(
+                            success=False,
+                            error=f"未知工具: {tool_name}",
+                        )
                 latency = (time.perf_counter() - t0) * 1000
 
                 # 记录轨迹
