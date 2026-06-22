@@ -11,12 +11,11 @@
 | 指标 | 数值 |
 |------|------|
 | YAML 用例 | 339（226 LLM-only + 113 RuleBaseline） |
-| pytest | 382 passed + 226 skipped 🟢 |
-| DeepSeek 全量 | 147/226 (65.0%) · P95 8.57s |
-| MiniMax 全量 | 170/226 (75.2%) · P95 8.28s |
-| DeepSeek 安全 | 30/40 (75%) |
-| MiniMax 安全 | 28/40 (70%) |
-| 详细报告 | [reports/benchmark-v1-full-summary.md](reports/benchmark-v1-full-summary.md) |
+| pytest | 420 passed + 226 skipped 🟢 |
+| DeepSeek v1.1 | 169/226 (74.8%) · P95 8.38s · $0.13/run |
+| MiniMax v1.1 | 168/226 (74.3%) · P95 9.49s · $0.35/run |
+| DeepSeek 安全 | 34/40 (85%) |
+| v1.1 报告 | [reports/benchmark-v1.1-full-summary.md](reports/benchmark-v1.1-full-summary.md) |
 
 ---
 
