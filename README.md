@@ -342,7 +342,8 @@ with fault_context("weather", "timeout", delay=3.0):
 | v1.1 | 双模型横向对比 + Provider 修复 + 三类失败归因 | ✅ |
 | P0.1 | 用例schema + 17种归因 + API重试/续跑/对比 + 安全12条 | ✅ |
 | P1 | 模型注册表 + baseline回归 + Dashboard + Docker | ✅ |
-| P2.3 | Benchmark v1.0：339条 + 9类生成器 + 376p+224skip 全绿 | ✅ ← 当前 |
+| P2.6 | 全量评测: DS 65.0% vs MM 75.2% (226 LLM-only) | ✅ ← 当前 |
+| P2.3 | Benchmark v1.0：339条 + 9类生成器 + 382p+226skip 全绿 | ✅ |
 | P2.2.1 | Benchmark质量修复：全绿368+45skip + requires_llm + schema测试 | ✅ |
 | P2.2 | 154条benchmark + generate_cases.py + test_cases/README规范 | ✅ |
 | P2.1 | HTTPAgent接入CLI/API + model_alias打通 + 报告端点 | ✅ |
