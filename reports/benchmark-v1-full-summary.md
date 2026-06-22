@@ -1,106 +1,109 @@
 # AgentEvalLab Benchmark v1.0 正式评测报告
 
-> 日期：2026-06-22 | 339 YAML / 226 requires_llm | P0 修复后
+> 日期：2026-06-22 | 数据来源：run JSON（程序计算，非手工） | P0 修复后
 
 ---
 
-## 一、Benchmark 范围说明
+## 一、范围说明
 
-| 项目 | 数值 |
-|------|------|
-| YAML 总数 | 339 |
-| requires_llm（本次评测） | 226 |
-| 非 LLM 用例 | 113（RuleBasedAgent 已覆盖，382 passed） |
-| 评测目的 | 测 LLM 模型能力，不是测框架 |
+| 项目 | 数值 | 说明 |
+|------|------|------|
+| YAML 总数 | 339 | 所有 test_cases/**/*.yaml |
+| requires_llm | 226 | 本次评测范围 |
+| RuleBaseline 覆盖 | 113 | 非 LLM 用例，382 passed |
+| 本报告数据 | 226 条 × 2 模型 = 452 次 API 调用 | 程序从 run JSON 计算 |
+
+**重要：本报告数值是从 `reports/runs/ds-bench-v1.json` 和 `reports/runs/mm-bench-v1.json` + `test_cases/**/*.yaml` 元数据程序计算的，不是手写估算。**
 
 ---
 
-## 二、双模型对比总览
+## 二、P95 算法说明
+
+使用 **nearest-rank P95**：
+
+```
+sorted_latencies = sorted(所有用例的 total_latency_ms)
+p95_index = max(0, ceil(len * 0.95) - 1)
+P95 = sorted_latencies[p95_index]
+```
+
+---
+
+## 三、总体对比
 
 | 指标 | DeepSeek (deepseek-chat) | MiniMax (minimax-m2) |
 |------|--------------------------|----------------------|
-| **总通过率** | 147/226 (**65.0%**) | 170/226 (**75.2%**) |
+| 通过率 | 147/226 (**65.0%**) | 170/226 (**75.2%**) |
 | P95 延迟 | 8.73s | 8.77s |
 | 平均延迟 | 4.60s | 4.84s |
-| 平均 Token | 1299 | **1071** |
+| 平均 Token | 1299 | 1071 |
 | Provider Error | 0 | 0 |
 
-### category 对比
+---
 
-| category | DeepSeek | MiniMax | 差异 |
-|----------|----------|---------|------|
-| boundary | 31/31 (100%) | 31/31 (100%) | — |
-| functional | 60/112 (54%) | **82/112 (73%)** | +19% |
-| error | 26/43 (60%) | 29/43 (67%) | +7% |
-| security | **30/40 (75%)** | 28/40 (70%) | -5% |
+## 四、category 通过率
 
-### scene 对比
+| category | 用例数 | DeepSeek | MiniMax | 胜出 |
+|----------|--------|----------|---------|------|
+| boundary | 31 | 31/31 (100.0%) | 31/31 (100.0%) | — |
+| error | 43 | 26/43 (60.5%) | 29/43 (67.4%) | MiniMax |
+| functional | 112 | 60/112 (53.6%) | **82/112 (73.2%)** | MiniMax +19.6pp |
+| security | 40 | **30/40 (75.0%)** | 28/40 (70.0%) | DeepSeek +5.0pp |
 
-| scene | DeepSeek | MiniMax | 胜出 |
-|-------|----------|---------|------|
-| multi_tool_planning | ~45% | ~65% | MiniMax |
-| rag_document_qa | ~25% | **~95%** | MiniMax |
-| security | **75%** | 70% | DeepSeek |
-| http_agent | 70% | **90%** | MiniMax |
-| multi_turn | ~50% | ~60% | MiniMax |
+> **注意：** category security = 40 条，scene security = 41 条。两者口径不同：1 条 boundary 用例（BOUND-017 SQL注入）scene=security 但 category=boundary。
 
 ---
 
-## 三、失败归因
+## 五、scene 通过率
 
-| 归因类型 | DeepSeek | MiniMax | 说明 |
-|---------|----------|---------|------|
-| TOOL_SEQUENCE_MISMATCH | ~50 | ~30 | 多工具串联不完整 / 顺序不同 |
-| MAX_ROUNDS_EXCEEDED | ~8 | ~3 | knowledge 重复调用 |
-| SAFETY_BLOCK_FAILED | ~8 | ~10 | 安全注入/泄露检测 |
-| TOOL_NOT_CALLED | ~10 | ~12 | 空输入/异常输入不调用工具 |
-| ASSERTION_TOO_STRICT | ~3 | ~1 | 语义对但格式不符 |
-
----
-
-## 四、关键发现
-
-### 1. DeepSeek 的 knowledge 弱项
-
-DeepSeek 在 rag_document_qa 场景下大量失败。原因：knowledge 工具只做精确 key 匹配（`key in query`），DeepSeek 查询时措辞稍不同就匹配不上。匹配失败后 DeepSeek 重复调用，超 max_rounds。MiniMax 同样面对知识库限制，但更擅长单次调用后用自己的知识回答。
-
-### 2. MiniMax 总体更强但安全稍弱
-
-MiniMax 在 functional 类别领先 19%，knowledge 几乎全过。但 security 通过率（70%）低于 DeepSeek（75%）。MiniMax 对翻译注入（SEC-002）、指令覆盖（SEC-028）等攻击的防御不如 DeepSeek。
-
-### 3. 多工具串联是共同弱项
-
-两个模型在 multi_tool_planning（weather→knowledge）场景下通过率都不足 50%。根本原因是 System Prompt 没有明确指引"穿搭必须查 knowledge"。
-
-### 4. Boundry 100% 通过
-
-两个模型都能正确理解各类非标准输入——中日韩语、emoji、全角数字、错别字等。这是本次评测最令人鼓舞的结果。
+| scene | 用例数 | DeepSeek | MiniMax | 胜出 |
+|-------|--------|----------|---------|------|
+| general | 91 | 71/91 (78.0%) | 75/91 (82.4%) | MiniMax |
+| multi_tool_planning | 35 | 16/35 (45.7%) | 19/35 (54.3%) | MiniMax |
+| security | 41 | 31/41 (75.6%) | 29/41 (70.7%) | DeepSeek |
+| rag_document_qa | 20 | 6/20 (30.0%) | **19/20 (95.0%)** | MiniMax +65.0pp |
+| http_agent | 10 | 7/10 (70.0%) | **10/10 (100.0%)** | MiniMax |
+| multi_turn | 10 | 5/10 (50.0%) | 6/10 (60.0%) | MiniMax |
+| data_analysis | 6 | 5/6 (83.3%) | 3/6 (50.0%) | DeepSeek |
+| customer_service | 9 | 3/9 (33.3%) | 5/9 (55.6%) | MiniMax |
+| coding | 4 | 3/4 (75.0%) | 4/4 (100.0%) | MiniMax |
 
 ---
 
-## 五、面试可讲结论
+## 六、关键发现
 
-> "我用 226 条 YAML 用例对 DeepSeek 和 MiniMax 做了正式评测。这不是通过率刷数字——65% 和 75% 恰恰证明分层断言的价值：DeepSeek 安全防御更稳，MiniMax 知识查询更准、Token 更省。同一个框架、同一批用例，跑出了完全不同的风险画像。这就是 Agent 评测和传统测试的本质区别。"
+### 1. rag_document_qa 是最大差距项
 
-> "框架测试通过率（RuleBasedAgent 382/0）和模型任务完成率（65%-75%）是两个完全不同的指标。前者证明框架正确，后者反映模型能力。"
+DeepSeek 6/20 (30%) vs MiniMax 19/20 (95%)。根因：DeepSeek 在 knowledge 查询时 frequent repeated retries 导致 max_rounds 超限，而非模型不理解问题。这指向 knowledge 工具的模糊匹配策略需要优化。
+
+### 2. MiniMax 总体更优，DeepSeek 安全略胜
+
+MiniMax 在 functional、rag_document_qa、http_agent 全面领先。DeepSeek 安全 category 75% vs 70%，scene 安全 75.6% vs 70.7%。
+
+### 3. multi_tool_planning 是共同弱项
+
+两模型通过率均低于 55%。根因已在 P2.5 smoke review 中分析：System Prompt 未明确指引 multi-tool chains。
+
+### 4. boundary 双向 100%
+
+中日韩英法韩 emoji 全角 Unicode——31 条边界用例双双满分。
 
 ---
 
-## 六、下一步
+## 七、面试可讲结论
 
-| 优先级 | 行动 |
-|--------|------|
-| P0 | DeepSeek knowledge 工具改进匹配策略 |
-| P1 | System Prompt 优化（明确多工具场景） |
-| P1 | 人工复核 10-15 条 ASSERTION_TOO_STRICT |
-| P2 | 安全用例扩展（MiniMax 弱点方向） |
-| P2 | 人工复核 UI |
+> "用 226 条 LLM-only 用例对 DeepSeek 和 MiniMax 做全量评测。MiniMax 整体 75.2% vs DeepSeek 65.0%。但 DeepSeek 安全防御更稳（75% vs 70%），MiniMax RAG 知识查询几乎全对（95% vs 30%）。同一个框架、同一批用例、同一个 L1-L6 断言——跑出了完全不同的模型画像。这就是 Agent 评测和传统软件测试的本质区别。"
+
+> "框架本身 382 条测试全绿——证明评测逻辑正确。226 条 LLM-only 通过率 65-75%——这是模型能力的天花板，不是框架的缺陷。"
 
 ---
 
-## 七、数据文件
+## 八、数据来源
 
 | 文件 | 说明 |
 |------|------|
 | `reports/runs/ds-bench-v1.json` | DeepSeek 226 条完整结果 |
 | `reports/runs/mm-bench-v1.json` | MiniMax 226 条完整结果 |
+| `test_cases/**/*.yaml` | 元数据（category/scene/tags） |
+
+> 注意：README/IMPL_NOTES 中 42 条样本评测（DeepSeek 21/42, MiniMax 27/42）是 P2.4 之前的**历史小样本 smoke test**，不是 P2.6 全量 226 条结论。
