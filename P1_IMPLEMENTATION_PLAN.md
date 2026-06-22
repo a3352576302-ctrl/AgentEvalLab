@@ -1,6 +1,6 @@
 # P1 实施计划
 
-> 创建：2026-06-21 | 基线：245 passed | 原则：增强不重写
+> 创建：2026-06-21 | 基线：382 passed + 226 skipped | 原则：增强不重写
 
 ---
 
@@ -15,7 +15,7 @@
 | Retry + provider 错误分类 | ✅ |
 | --save-run / --resume / --compare-run | ✅ |
 | HTML 报告（归因 + trace + 对比） | ✅ |
-| pytest 245 passed | ✅ |
+| pytest 382 passed + 226 skipped | ✅ |
 
 ---
 
@@ -201,7 +201,7 @@ services:
 ## 八、验证标准
 
 ```bash
-pytest tests/ -q                                    # ≥ 245 passed
+pytest tests/ -q                                    # ≥ 382 passed + 226 skipped
 python scripts/run_report.py --list-models           # 列出模型
 python scripts/run_report.py --html-only --save-run --run-id p1-smoke
 python scripts/run_report.py --set-baseline p1-base --run-id p1-smoke

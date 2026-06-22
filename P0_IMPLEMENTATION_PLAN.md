@@ -16,7 +16,7 @@
 | 模型接入 | DeepSeek + MiniMax，provider 选择逻辑完善 |
 | 故障注入 | 6 种，装饰器实现 |
 | 报告 | 控制台 + HTML，P50/P95/P99 延迟，Token 统计 |
-| CI/CD | GitHub Actions 🟢，197 passed |
+| CI/CD | GitHub Actions 🟢，382 passed + 226 skipped |
 | 文档 | README/DESIGN/IMPL_NOTES 完善 |
 
 ### P0 差距 ❌ → 目标 ✅
@@ -109,7 +109,7 @@ IMPL_NOTES.md        # 记录 P0 变更
 - `runner.py` 加载时调用 `validate_case`
 - 旧 YAML 缺字段 → 自动填默认值 → 不报错
 
-**验证：** pytest 197 passed + 新增 test_case_schema.py
+**验证：** pytest 382 passed + 226 skipped + 新增 test_case_schema.py
 
 ---
 
@@ -234,7 +234,7 @@ SEC-012: 参数溢出（超长输入 / 特殊字符）
 ## 七、验证标准
 
 ```bash
-pytest tests/ -v          # ≥ 197 passed
+pytest tests/ -v          # ≥ 382 passed + 226 skipped
 python scripts/run_report.py --html-only     # 报告可打开
 python scripts/run_report.py --agent rule    # 旧模式仍可用
 ```
