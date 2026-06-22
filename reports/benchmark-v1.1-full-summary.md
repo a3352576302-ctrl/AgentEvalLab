@@ -9,8 +9,8 @@
 | 指标 | DS v1.0 | DS v1.1 | Δ | MM v1.0 | MM v1.1 | Δ |
 |------|---------|---------|---|---------|---------|---|
 | 总通过率 | 147/226 (65.0%) | **169/226 (74.8%)** | +9.8pp | 170/226 (75.2%) | 168/226 (74.3%) | -0.9pp |
-| P95 延迟 | 8.57s | 8.38s | -0.19s | 8.28s | 9.49s | +1.21s |
-| Avg Token | 1299 | 1445 | +146 | 1071 | 1312 | +241 |
+| P95 延迟 | 8.57s | 7.82s | -0.75s | 8.28s | 8.51s | +0.23s |
+| Avg Token | 1299 | 1420 | +121 | 1071 | 1294 | +223 |
 | Security | 30/40 (75%) | **34/40 (85%)** | +10pp | 28/40 (70%) | 25/40 (62%) | -8pp |
 | Error | 26/43 (60%) | 30/43 (70%) | +10pp | 29/43 (67%) | 31/43 (72%) | +5pp |
 
@@ -18,7 +18,7 @@
 
 | 改善项 | 效果 |
 |--------|------|
-| Knowledge 模糊匹配 (Stage 1) | DS rag_document_qa: 30%→~70% (20条全部knowledge查询 PASS) |
+| Knowledge 模糊匹配 (Stage 1) | DS rag_document_qa: 6/20 (30%)→16/20 (80%) |
 | Knowledge 内容扩展 (Stage 2.2) | GEN-KNOW-011/012/014 从全失败→MM 3/3, DS 2/3 |
 | System Prompt (Stage 2) | DS multi_tool_planning 部分改善 (MT-001/003/005 PASS) |
 | Dedup (Stage 2) | knowledge 重复调用从 4-6次降至 2-3次 |
@@ -36,7 +36,7 @@ MiniMax v1.1 security 25/40 vs v1.0 28/40。多出的 3 条失败主要是间接
 | DeepSeek | $0.13 | $404 | $4,044 |
 | MiniMax | $0.35 | $1,053 | $10,530 |
 
-> 价格来源：DeepSeek ~$0.42/M token output，MiniMax ~$1.20/M。价格为可配置估算值。
+> 价格来源：DeepSeek ~$0.42/M token output，MiniMax ~$1.20/M。成本按总 token × 输出单价估算（非 input/output 分开计价），价格为可配置估算值。
 
 ---
 
@@ -68,7 +68,7 @@ MiniMax v1.1 security 25/40 vs v1.0 28/40。多出的 3 条失败主要是间接
 
 v1.1 主要成果：
 1. DeepSeek 通过率 +9.8pp (65.0%→74.8%)，security +10pp (75%→85%)
-2. knowledge 匹配从单向子串→5层匹配+3个新条目，rag_document_qa 接近全覆盖
+2. knowledge 匹配从单向子串→5层匹配+3个新条目，DS rag_document_qa 从 6/20 提升到 16/20
 3. 语义复核机制已建立，38/57 条 DS 失败被标记为非真失败
 4. 成本估算和 tool metrics 系统化
 
