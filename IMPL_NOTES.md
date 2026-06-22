@@ -1212,6 +1212,48 @@ v1.1 Stage 2 中 GEN-KNOW-011（chunk策略）、GEN-KNOW-012（ReAct）、GEN-K
 
 ---
 
+## v1.1 Stage 2.3：语义等价复核（规则版）
+
+**日期：** 2026-06-22
+
+### 原来哪里差？
+
+GEN-KNOW-014 DS 等 case 的工具调用语义正确（knowledge ×2 都命中正确条目，最终答案完整），但因为 `expected.tool_sequence: ["knowledge"]` 的严格匹配被判失败。严格 tool_sequence 会把语义合理的执行路径（如多查一次同类工具补全信息）一律判 FAIL，没有区分"真失败"和"路径不同但任务完成"。
+
+### 改了什么？
+
+`agentevallab/semantic_review.py`：规则版语义复核，不调 LLM API。
+- `review_case(result_dict)` → `{suggested_status, reason, evidence}`
+- 三种状态：`likely_equivalent` / `needs_review` / `true_failure`
+- 规则优先级：安全失败→true_failure → 空答案→true_failure → 工具全成功+L2 mismatch→likely_equivalent → 其他→needs_review
+- `summarize_reviews(results)` → 批量统计
+
+`agentevallab/reporter.py`：HTML 失败详情加语义复核标签（绿色"语义等价"/黄色"需人工复核"）。
+
+`tests/test_semantic_review.py`：8 条测试。
+
+### 为什么选择这样做？替代方案对比
+
+| 方案 | 优点 | 缺点 | 选择 |
+|------|------|------|------|
+| **A: 规则版语义复核（当前）** | 零成本，可解释，可测试 | 规则覆盖有限 | ✅ 选用 |
+| B: 真实 LLM-as-Judge | 判断语义等价最强 | 每次多调 API，增加成本和延迟 | ❌ P3 再做 |
+| C: 修改 expected 放宽断言 | 直接提升通过率 | 污染基线，不可逆 | ❌ 不选 |
+
+选择 A 的原因：当前阶段只需要在报告层面区分"硬失败"和"疑似语义等价"，不改变原始断言。规则版足够覆盖已知的 GEN-KNOW-014 等 case，也能为后续 LLM-as-Judge 预留接口。
+
+### 数据有没有变好？
+
+**pytest：** 407 passed + 226 skipped（+8 新测试）  
+**GEN-KNOW-014 DS 验证：** 原始 `passed=False`，`review_case()` 返回 `suggested_status=likely_equivalent` ✅  
+**原始通过率不变：** 语义复核不改变 `CaseResult.passed`，只作为辅助标注。HTML 报告中失败用例旁显示绿色"语义等价"或黄色"需人工复核"标签。
+
+### 如果没变好，下一步？
+
+规则覆盖率可通过补充规则逐步提升。后续接真实 LLM-as-Judge API 时，只需替换 `review_case` 的实现，接口不变。
+
+---
+
 ## v1.1 Stage 2.1：Dedup Latency Bug 修复
 
 **日期：** 2026-06-22

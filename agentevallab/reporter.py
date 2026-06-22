@@ -14,6 +14,7 @@ from typing import Any
 
 from agentevallab.runner import CaseResult
 from agentevallab.error_classifier import classify_error, classify_results, get_taxonomy_description
+from agentevallab.semantic_review import review_case
 
 
 # ============================================================
@@ -421,6 +422,24 @@ tr:hover {{ background:#f9fafb; }}
                     for l in labels
                 )
                 html += f' <span style="margin-left:4px">{label_tags}</span>'
+
+            # 语义复核标签
+            import json as _json
+            result_dict = {
+                "case_id": f.case_id, "passed": f.passed, "error": f.error,
+                "final_answer": f.trajectory.final_answer if f.trajectory else "",
+                "tool_calls": [{"tool_name": c.tool_name, "success": c.result.success}
+                               for c in f.trajectory.tool_calls] if f.trajectory else [],
+                "assertions": [{"name": a.name, "passed": a.passed, "reason": a.reason}
+                               for a in f.report.results] if f.report else [],
+            }
+            sr = review_case(result_dict)
+            if not f.passed and sr["suggested_status"] != "true_failure":
+                sr_tag = "tag-pass" if sr["suggested_status"] == "likely_equivalent" else "tag-warn"
+                sr_label = {"likely_equivalent": "语义等价", "needs_review": "需人工复核"}
+                html += (f' <span class="tag {sr_tag}" style="margin-left:8px">'
+                         f'{sr_label.get(sr["suggested_status"], sr["suggested_status"])}'
+                         f'</span>')
 
             if f.error:
                 html += f'<p style="margin-top:8px;color:#dc2626">⚠ 异常: {_html_escape(f.error[:300])}</p>'
