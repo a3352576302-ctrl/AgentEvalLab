@@ -145,3 +145,62 @@ class TestKnowledge:
         assert "query" in result.data
         assert "matched_key" in result.data
         assert "answer" in result.data
+
+    # v1.1 fuzzy matching tests
+
+    def test_query包含key的变体(self):
+        """更长的查询包含 shorter key"""
+        result = tool_knowledge("TCP为什么需要三次握手而不是两次")
+        assert result.success is True
+        assert "SYN" in result.data["answer"]
+
+    def test_query是key的子串(self):
+        """短查询匹配更长 key"""
+        result = tool_knowledge("RAG")
+        assert result.success is True
+        assert "检索增强" in result.data["answer"]
+
+    def test_中英混合匹配(self):
+        """中文查询匹配英文 alias"""
+        result = tool_knowledge("什么是检索增强生成")
+        assert result.success is True
+        assert "RAG" in result.data["answer"]
+
+    def test_别名匹配(self):
+        """alias 映射正常工作"""
+        result = tool_knowledge("什么是智能体")
+        assert result.success is True
+        assert "Agent" in result.data["answer"]
+
+    def test_大小写归一化(self):
+        """tcp 小写匹配 TCP 大写 key"""
+        result = tool_knowledge("tcp handshake")
+        assert result.success is True
+
+    def test_标点归一化(self):
+        """带标点的查询能匹配"""
+        result = tool_knowledge("什么是RAG？")
+        assert result.success is True
+
+    def test_全角半角归一化(self):
+        """全角标点查询能匹配"""
+        result = tool_knowledge("什么是ＲＡＧ？")
+        assert result.success is True
+
+    def test_无匹配返回候选提示(self):
+        """无精确匹配时返回候选列表"""
+        result = tool_knowledge("量子计算原理")
+        assert result.success is False
+        assert result.error is not None
+
+    def test_部分关键词别名匹配成功(self):
+        """查询包含部分关键词时通过别名匹配"""
+        result = tool_knowledge("网络分层模型")
+        assert result.success is True
+        assert "OSI" in result.data["answer"]
+
+    def test_完全无关联返回候选(self):
+        """查询完全无关联时返回候选提示"""
+        result = tool_knowledge("量子计算原理")
+        assert result.success is False
+        assert "知识库" in result.error

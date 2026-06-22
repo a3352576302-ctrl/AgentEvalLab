@@ -187,9 +187,53 @@ def tool_weather(city: str) -> ToolResult:
     )
 
 
+# 知识库同义词/别名映射
+_KNOWLEDGE_ALIASES: dict[str, list[str]] = {
+    "什么是RAG": ["RAG", "检索增强生成", "retrieval augmented generation",
+                 "RAG技术", "RAG原理", "什么是检索增强生成"],
+    "什么是Agent": ["Agent", "智能体", "AI Agent", "agent概念",
+                   "什么是智能体", "agent定义"],
+    "什么是Prompt注入": ["Prompt注入", "prompt injection", "提示注入",
+                        "注入攻击", "提示词注入"],
+    "TCP三次握手": ["TCP", "三次握手", "TCP握手", "tcp handshake",
+                   "TCP协议", "传输控制协议"],
+    "OSI模型": ["OSI", "七层模型", "osi model", "OSI七层",
+               "网络分层", "开放系统互连"],
+    "35度穿什么": ["35度", "高温穿搭", "炎热穿搭", "夏天穿什么",
+                  "高温天气穿什么", "35°C穿搭"],
+}
+
+
+def _normalize_query(q: str) -> str:
+    """归一化查询字符串：去标点、去多余空格、全角转半角、转小写。"""
+    # 全角→半角
+    result = []
+    for ch in q:
+        code = ord(ch)
+        if 0xFF01 <= code <= 0xFF5E:
+            result.append(chr(code - 0xFEE0))
+        elif code == 0x3000:  # 全角空格
+            result.append(' ')
+        else:
+            result.append(ch)
+    normalized = ''.join(result).lower().strip()
+    # 去标点（保留字母数字中文和空格）
+    import re
+    normalized = re.sub(r'[^\w\s一-鿿]', '', normalized)
+    normalized = re.sub(r'\s+', ' ', normalized).strip()
+    return normalized
+
+
 @injectable("knowledge")
 def tool_knowledge(query: str) -> ToolResult:
-    """查询知识库（模拟数据）。
+    """查询知识库（模拟数据），v1.1 增强模糊匹配。
+
+    匹配策略（按优先级）：
+    1. 原始 key 包含在 query 中
+    2. query 包含在原始 key 中
+    3. 归一化后双向包含匹配（去标点、全角半角、大小写）
+    4. 别名/同义词映射
+    5. 无匹配时返回 partial hint 而非纯错误
 
     参数：
         query — 查询关键词或问题，如 'TCP三次握手'
@@ -198,19 +242,62 @@ def tool_knowledge(query: str) -> ToolResult:
         ToolResult，成功时 data 包含 query/matched_key/answer
     """
     t0 = time.perf_counter()
-    # 模糊匹配：检查 query 是否包含某个 key
+    norm_query = _normalize_query(query)
+
+    # 策略 1+2：原始双向包含匹配
     for key, value in _KNOWLEDGE_DB.items():
-        if key in query:
+        if key in query or query in key:
             latency = (time.perf_counter() - t0) * 1000
             return ToolResult(
                 success=True,
                 data={"query": query, "matched_key": key, "answer": value},
                 latency_ms=latency,
             )
+
+    # 策略 3：归一化后双向包含匹配
+    for key, value in _KNOWLEDGE_DB.items():
+        norm_key = _normalize_query(key)
+        if norm_key in norm_query or norm_query in norm_key:
+            latency = (time.perf_counter() - t0) * 1000
+            return ToolResult(
+                success=True,
+                data={"query": query, "matched_key": key, "answer": value,
+                      "match_method": "fuzzy"},
+                latency_ms=latency,
+            )
+
+    # 策略 4：别名映射
+    for key, aliases in _KNOWLEDGE_ALIASES.items():
+        norm_aliases = [_normalize_query(a) for a in aliases]
+        for alias in norm_aliases:
+            if alias in norm_query or norm_query in alias:
+                value = _KNOWLEDGE_DB[key]
+                latency = (time.perf_counter() - t0) * 1000
+                return ToolResult(
+                    success=True,
+                    data={"query": query, "matched_key": key, "answer": value,
+                          "match_method": "alias", "matched_alias": alias},
+                    latency_ms=latency,
+                )
+
+    # 策略 5：无匹配——提供候选提示，减少 LLM 重复调用
     latency = (time.perf_counter() - t0) * 1000
+    # 列出知识库中可能相关的 key
+    candidates = []
+    for key in _KNOWLEDGE_DB:
+        k_norm = _normalize_query(key)
+        # 简单关键词重叠度
+        q_words = set(norm_query.split())
+        k_words = set(k_norm.split())
+        overlap = len(q_words & k_words)
+        if overlap > 0:
+            candidates.append(key)
+    hint = ""
+    if candidates:
+        hint = f"。知识库中可能相关条目: {', '.join(candidates[:3])}"
     return ToolResult(
         success=False,
-        error=f"知识库中未找到与 '{query}' 相关的内容",
+        error=f"知识库中未找到与 '{query}' 精确匹配的内容{hint}。请使用更具体的关键词重试。",
         latency_ms=latency,
     )
 
