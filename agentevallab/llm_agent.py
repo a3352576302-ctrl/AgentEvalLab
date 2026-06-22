@@ -54,6 +54,28 @@ def _first_env(names: tuple[str, ...]) -> str:
     return ""
 
 
+def _normalize_params(params: dict) -> str:
+    """归一化工具参数为字符串 key，用于去重。
+
+    去掉空格、标点，全角转半角，小写。
+    """
+    import re
+    raw = json.dumps(params, ensure_ascii=False, sort_keys=True)
+    # 全角→半角
+    result = []
+    for ch in raw:
+        code = ord(ch)
+        if 0xFF01 <= code <= 0xFF5E:
+            result.append(chr(code - 0xFEE0))
+        elif code == 0x3000:
+            result.append(' ')
+        else:
+            result.append(ch)
+    normalized = ''.join(result).lower().strip()
+    normalized = re.sub(r'[^\w]', '', normalized)
+    return normalized
+
+
 def _is_retryable(exception: Exception) -> bool:
     """判断异常是否可重试。
 
@@ -211,8 +233,8 @@ class LLMAgent(AgentProtocol):
             {"role": "user", "content": user_input},
         ]
 
-        # 去重：记录已调用过的 tool，避免 knowledge 重复调用
-        called_cache: set = set()
+        # 去重：记录已调用过的 (tool, normalized_args) → ToolResult，避免重复调用
+        called_results: dict[tuple[str, str], ToolResult] = {}
 
         for _round in range(self.max_rounds):
             # 带指数退避的重试
@@ -266,28 +288,18 @@ class LLMAgent(AgentProtocol):
                 except json.JSONDecodeError:
                     params = {}
 
-                # 去重检查：
-                # - knowledge 工具：同一轮对话中已调用过 → 提示复用已有结果
-                # - 其他工具：同一 tool+params 已调用过 → 提示复用
-                params_key = json.dumps(params, ensure_ascii=False, sort_keys=True)
-                tool_dedup_key = (tool_name, params_key)
-                tool_only_key = tool_name
-
-                if tool_name == "knowledge" and tool_only_key in called_cache:
+                # 去重检查：归一化 tool+args，复用已有结果
+                dedup_key = (tool_name, _normalize_params(params))
+                if dedup_key in called_results:
+                    result = called_results[dedup_key]
+                    # 标记为 deduped（最终答案无影响，但 trace 可见）
                     result = ToolResult(
-                        success=True,
-                        data={"cached": True,
-                              "message": "知识库已查询过，请基于之前返回的结果回答，不要重复查询"},
-                    )
-                elif tool_dedup_key in called_cache:
-                    result = ToolResult(
-                        success=True,
-                        data={"cached": True, "message": "已查询过相同内容，请基于已有结果回答"},
+                        success=result.success,
+                        data={**result.data, "deduped": True},
+                        error=result.error,
+                        latency_ms=0.0,
                     )
                 else:
-                    called_cache.add(tool_dedup_key)
-                    if tool_name == "knowledge":
-                        called_cache.add(tool_only_key)  # 额外标记 knowledge 已调用
                     # 调用工具
                     t0 = time.perf_counter()
                     if tool_name in TOOL_REGISTRY:
@@ -299,6 +311,9 @@ class LLMAgent(AgentProtocol):
                             success=False,
                             error=f"未知工具: {tool_name}",
                         )
+                    latency = (time.perf_counter() - t0) * 1000
+                    result.latency_ms = latency
+                    called_results[dedup_key] = result
                 latency = (time.perf_counter() - t0) * 1000
 
                 # 记录轨迹

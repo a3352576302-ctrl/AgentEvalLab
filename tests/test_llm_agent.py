@@ -336,3 +336,73 @@ class TestLLMAgentRetry:
             traj = agent.run("测试")
 
         assert call_count[0] == 1
+
+
+class TestLLMAgentDedup:
+    """v1.1 Stage 2: 工具调用去重测试"""
+
+    @pytest.fixture
+    def agent(self):
+        return LLMAgent(api_key="sk-mock", model="mock-model")
+
+    def test_相同tool_params被去重(self, agent):
+        """同一 tool+args 第二次调用返回 cached"""
+        msg1 = MagicMock(); msg1.content = None
+        tc1 = MagicMock(); tc1.id = "c1"; tc1.function.name = "weather"
+        tc1.function.arguments = '{"city": "北京"}'; msg1.tool_calls = [tc1]
+        msg2 = MagicMock(); msg2.content = None
+        tc2 = MagicMock(); tc2.id = "c2"; tc2.function.name = "weather"
+        tc2.function.arguments = '{"city": "北京"}'; msg2.tool_calls = [tc2]
+        fmsg = MagicMock(); fmsg.content = "北京35度。"; fmsg.tool_calls = None
+        cnt = [0]
+        def side(*a, **kw):
+            cnt[0] += 1
+            if cnt[0] == 1: return MagicMock(choices=[MagicMock(message=msg1)])
+            if cnt[0] == 2: return MagicMock(choices=[MagicMock(message=msg2)])
+            return MagicMock(choices=[MagicMock(message=fmsg)])
+        with patch("openai.resources.chat.completions.Completions.create", side_effect=side):
+            traj = agent.run("北京天气怎么样？")
+        assert traj.total_rounds == 2
+        assert traj.tool_calls[1].result.data.get("deduped") is True
+        assert "35度" in traj.final_answer
+
+    def test_不同knowledge查询不被误去重(self, agent):
+        """不同 query 的 knowledge 调用仍分别执行"""
+        msg1 = MagicMock(); msg1.content = None
+        tc1 = MagicMock(); tc1.id = "c1"; tc1.function.name = "knowledge"
+        tc1.function.arguments = '{"query": "TCP三次握手"}'; msg1.tool_calls = [tc1]
+        msg2 = MagicMock(); msg2.content = None
+        tc2 = MagicMock(); tc2.id = "c2"; tc2.function.name = "knowledge"
+        tc2.function.arguments = '{"query": "什么是RAG"}'; msg2.tool_calls = [tc2]
+        fmsg = MagicMock(); fmsg.content = "TCP和RAG。"; fmsg.tool_calls = None
+        cnt = [0]
+        def side(*a, **kw):
+            cnt[0] += 1
+            if cnt[0] == 1: return MagicMock(choices=[MagicMock(message=msg1)])
+            if cnt[0] == 2: return MagicMock(choices=[MagicMock(message=msg2)])
+            return MagicMock(choices=[MagicMock(message=fmsg)])
+        with patch("openai.resources.chat.completions.Completions.create", side_effect=side):
+            traj = agent.run("TCP和RAG是什么？")
+        assert traj.total_rounds == 2
+        assert traj.tool_calls[1].result.data.get("deduped") is None
+
+    def test_deduped保留原始数据(self, agent):
+        """去重调用复用首次的真实 ToolResult"""
+        msg1 = MagicMock(); msg1.content = None
+        tc1 = MagicMock(); tc1.id = "c1"; tc1.function.name = "weather"
+        tc1.function.arguments = '{"city": "北京"}'; msg1.tool_calls = [tc1]
+        msg2 = MagicMock(); msg2.content = None
+        tc2 = MagicMock(); tc2.id = "c2"; tc2.function.name = "weather"
+        tc2.function.arguments = '{"city": "北京"}'; msg2.tool_calls = [tc2]
+        fmsg = MagicMock(); fmsg.content = "done"; fmsg.tool_calls = None
+        cnt = [0]
+        def side(*a, **kw):
+            cnt[0] += 1
+            if cnt[0] == 1: return MagicMock(choices=[MagicMock(message=msg1)])
+            if cnt[0] == 2: return MagicMock(choices=[MagicMock(message=msg2)])
+            return MagicMock(choices=[MagicMock(message=fmsg)])
+        with patch("openai.resources.chat.completions.Completions.create", side_effect=side):
+            traj = agent.run("北京天气")
+        assert traj.tool_calls[0].result.success is True
+        assert traj.tool_calls[1].result.data.get("deduped") is True
+        assert "temp" in traj.tool_calls[1].result.data
