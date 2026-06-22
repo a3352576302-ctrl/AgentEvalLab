@@ -10,8 +10,9 @@
 |------|------|------|
 | YAML 总数 | 339 | 所有 test_cases/**/*.yaml |
 | requires_llm | 226 | 本次评测范围 |
-| RuleBaseline 覆盖 | 113 | 非 LLM 用例，382 passed |
-| 本报告数据 | 226 条 × 2 模型 = 452 次 API 调用 | 程序从 run JSON 计算 |
+| RuleBaseline | 113/113 passed（226 LLM-only skipped） | CLI `--agent rule` 验证框架正确 |
+| pytest | 382 passed + 226 skipped | 全量测试，含 RuleBaseline + schema + 单元测试 |
+| 本报告数据 | 226 条 × 2 模型 = 452 次 API 调用 | 程序从 run JSON + YAML 元数据计算 |
 
 **重要：本报告数值是从 `reports/runs/ds-bench-v1.json` 和 `reports/runs/mm-bench-v1.json` + `test_cases/**/*.yaml` 元数据程序计算的，不是手写估算。**
 
@@ -34,7 +35,7 @@ P95 = sorted_latencies[p95_index]
 | 指标 | DeepSeek (deepseek-chat) | MiniMax (minimax-m2) |
 |------|--------------------------|----------------------|
 | 通过率 | 147/226 (**65.0%**) | 170/226 (**75.2%**) |
-| P95 延迟 | 8.73s | 8.77s |
+| P95 延迟 | 8.57s | 8.28s |
 | 平均延迟 | 4.60s | 4.84s |
 | 平均 Token | 1299 | 1071 |
 | Provider Error | 0 | 0 |
