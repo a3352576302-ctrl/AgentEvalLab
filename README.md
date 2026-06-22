@@ -142,12 +142,16 @@ ERROR-001,ERROR-003 \
   --save-run --run-id ds-20260621
 ```
 
-> **DeepSeek 实测 (2026-06-19):** 24/42 (57.1%), P95=7.19s, 安全 9/9
-> **MiniMax M2 实测 (2026-06-19):** 27/42 (64.3%), P95=5.95s, 安全 7/9
+<details>
+<summary>📜 历史小样本 smoke test（P2.4 前，42 条）</summary>
 
-如需横向对比 MiniMax：
+> 以下为 2026-06-19 首次 14 条精选用例 × 3 轮的早期结果，**不代表当前 Benchmark v1.0 全量 226 条结论**。当前结论见顶部摘要或 [reports/benchmark-v1-full-summary.md](reports/benchmark-v1-full-summary.md)。
+
+> **DeepSeek (2026-06-19):** 24/42 (57.1%), P95=7.19s  
+> **MiniMax M2 (2026-06-19):** 27/42 (64.3%), P95=5.95s
 
 ```bash
+# 历史 14 条小样本命令（已不再推荐作为主评测）
 python scripts/run_report.py --agent llm --provider minimax --model minimax-m2 --repeat 3 \
   --ids FUNC-001,FUNC-002,FUNC-003,FUNC-004,FUNC-011,FUNC-017,\
 BOUND-001,BOUND-002,BOUND-010,\
@@ -156,9 +160,11 @@ ERROR-001,ERROR-003 \
   --save-run --run-id mm-20260621 --compare-run ds-20260621
 ```
 
+</details>
+
 ### CI 自动回归
 
-每次推送或 PR 时，GitHub Actions 自动运行全部 245 条测试并上传报告。
+每次推送或 PR 时，GitHub Actions 自动运行 pytest 测试并上传报告。当前本地验证为 382 passed + 226 skipped。
 
 ---
 
@@ -188,7 +194,7 @@ AgentEvalLab/
 │   ├── boundary/              # 边界值 10 条
 │   ├── error/                 # 异常场景 8 条
 │   ├── security/              # 安全对抗 12 条
-│   ├── generated/             # 模板生成 83 条
+│   ├── generated/             # 模板生成 268 条
 │   └── scenarios/             # 场景用例 20 条
 ├── tests/                     # pytest 测试
 │   ├── conftest.py            # 共享 fixture
@@ -331,11 +337,11 @@ with fault_context("weather", "timeout", delay=3.0):
 
 ## 已知限制
 
-1. **双模型真实评测已完成**（2026-06-19）：DeepSeek 24/42、P95=7.19s、安全 9/9；MiniMax M2 27/42、P95=5.95s、安全 7/9。
+1. **Benchmark v1.0 全量评测已完成**（2026-06-22, P2.6）：MiniMax 整体更高 170/226 (75.2%)，DeepSeek 安全略优 30/40 vs 28/40。详见 [reports/benchmark-v1-full-summary.md](reports/benchmark-v1-full-summary.md)。
 2. **工具数量有限**（3 个），适用于演示框架设计，生产环境可扩展。
-3. **知识库为静态字典**，无检索/向量化环节；匹配策略可进一步优化。
-4. **多工具串联通过率偏低**（FUNC-004 0/3），LLM 在工具链完整性上有改善空间。
-5. **DeepSeek + MiniMax 双模型横向对比已完成**，后续可扩展更多模型。断言引擎仍基于规则匹配，大规模场景可升级为语义等价判断。
+3. **知识库为静态字典**，无检索/向量化环节；DeepSeek 在 knowledge 场景下重复调用问题严重（rag_document_qa 通过率 30% vs MiniMax 95%），匹配策略是后续优化重点。
+4. **multi_tool_planning 仍是共同弱项**：DS 16/35 (45.7%)，MM 19/35 (54.3%)。根因是 System Prompt 未明确指引多工具串联场景。
+5. **断言引擎仍基于规则匹配**，大规模场景可升级为语义等价判断（LLM-as-Judge）。
 
 ---
 
