@@ -206,3 +206,27 @@ class TestKnowledge:
         assert "知识库" in result.error
         assert "未找到" in result.error
         assert "重试" in result.error  # 候选提示帮助 LLM 重试而非反复调用
+
+    def test_RAG分块策略深度条目(self):
+        """RAG chunking 查询应命中具体分块策略，而不是泛化 RAG 定义"""
+        result = tool_knowledge("RAG文档分块策略 chunking strategies")
+        assert result.success is True
+        assert result.data["matched_key"] == "RAG分块策略"
+        assert "chunk" in result.data["answer"]
+        assert "overlap" in result.data["answer"]
+
+    def test_ReAct_Agent深度条目(self):
+        """ReAct 查询应命中 ReAct 条目，而不是泛化 Agent 定义"""
+        result = tool_knowledge("ReAct 模式 推理 行动")
+        assert result.success is True
+        assert result.data["matched_key"] == "什么是ReAct Agent"
+        assert "Reasoning" in result.data["answer"]
+        assert "Acting" in result.data["answer"]
+
+    def test_RAG和微调对比深度条目(self):
+        """RAG vs fine-tuning 查询应命中对比条目"""
+        result = tool_knowledge("模型微调 fine-tuning 适用场景")
+        assert result.success is True
+        assert result.data["matched_key"] == "RAG和微调对比"
+        assert "RAG" in result.data["answer"]
+        assert "微调" in result.data["answer"]

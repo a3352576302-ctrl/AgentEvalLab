@@ -104,6 +104,30 @@ _KNOWLEDGE_DB = {
         "先从外部知识库检索相关文档，再基于检索结果生成回答，"
         "可有效减少大模型的幻觉问题。"
     ),
+    "RAG分块策略": (
+        "RAG 分块策略用于把长文档切成可检索的 chunk。常见做法包括："
+        "固定长度分块（按字符或 token 切分，通常配合 overlap）、"
+        "递归分块（按标题、段落、句子逐级切分）、"
+        "语义分块（按主题或语义边界切分）。"
+        "chunk size 太大会引入噪声、浪费 token；太小会丢上下文。"
+        "实践中常从 300-800 token 的 chunk 和 10%-20% overlap 开始，"
+        "再用召回率、答案准确率和成本数据调参。"
+    ),
+    "什么是ReAct Agent": (
+        "ReAct Agent 是 Reasoning + Acting 的 Agent 模式，"
+        "让模型在推理和行动之间循环：先分析任务，再选择工具，"
+        "观察工具返回结果后继续推理或给出最终答案。"
+        "它适合需要多步工具调用、查询和验证的任务。"
+        "风险是模型可能重复调用工具、工具选择不稳定，"
+        "因此需要 max_rounds、trace、去重和失败归因来约束。"
+    ),
+    "RAG和微调对比": (
+        "RAG 和模型微调适合不同场景。RAG 适合知识经常变化、"
+        "需要引用外部资料、希望降低幻觉且不想改模型参数的任务；"
+        "模型微调适合稳定领域、需要固定输出风格、格式遵循或特定能力内化的任务。"
+        "如果问题是补充企业知识库或文档问答，优先选 RAG；"
+        "如果问题是让模型长期学会一种风格、流程或分类标准，可考虑微调。"
+    ),
     "什么是Agent": (
         "AI Agent（智能体）是具备自主感知、规划、工具调用和记忆能力的 AI 系统。"
         "核心循环为 Think → Act → Observe。"
@@ -189,6 +213,14 @@ def tool_weather(city: str) -> ToolResult:
 
 # 知识库同义词/别名映射
 _KNOWLEDGE_ALIASES: dict[str, list[str]] = {
+    "RAG分块策略": ["RAG分块", "RAG分块策略", "RAG chunk", "RAG chunking",
+                 "chunk策略", "chunk size", "文档分块", "文本分块",
+                 "分块方法", "分块大小"],
+    "什么是ReAct Agent": ["ReAct", "ReAct Agent", "Reasoning Acting",
+                         "推理行动", "Think Act Observe", "Agent ReAct"],
+    "RAG和微调对比": ["RAG vs 微调", "RAG和微调", "RAG和模型微调",
+                   "fine-tuning", "Fine tuning", "模型微调",
+                   "RAG适用场景", "微调适用场景"],
     "什么是RAG": ["RAG", "检索增强生成", "retrieval augmented generation",
                  "RAG技术", "RAG原理", "什么是检索增强生成"],
     "什么是Agent": ["Agent", "智能体", "AI Agent", "agent概念",
