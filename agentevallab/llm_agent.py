@@ -299,6 +299,7 @@ class LLMAgent(AgentProtocol):
                         error=result.error,
                         latency_ms=0.0,
                     )
+                    latency = 0.0
                 else:
                     # 调用工具
                     t0 = time.perf_counter()
@@ -314,7 +315,6 @@ class LLMAgent(AgentProtocol):
                     latency = (time.perf_counter() - t0) * 1000
                     result.latency_ms = latency
                     called_results[dedup_key] = result
-                latency = (time.perf_counter() - t0) * 1000
 
                 # 记录轨迹
                 call_record = ToolCall(

@@ -406,3 +406,26 @@ class TestLLMAgentDedup:
         assert traj.tool_calls[0].result.success is True
         assert traj.tool_calls[1].result.data.get("deduped") is True
         assert "temp" in traj.tool_calls[1].result.data
+
+    def test_deduped延迟为0(self, agent):
+        """deduped 调用 latency_ms 必须为 0，不污染统计"""
+        msg1 = MagicMock(); msg1.content = None
+        tc1 = MagicMock(); tc1.id = "c1"; tc1.function.name = "calculator"
+        tc1.function.arguments = '{"expression": "1+1"}'; msg1.tool_calls = [tc1]
+        msg2 = MagicMock(); msg2.content = None
+        tc2 = MagicMock(); tc2.id = "c2"; tc2.function.name = "calculator"
+        tc2.function.arguments = '{"expression": "1+1"}'; msg2.tool_calls = [tc2]
+        fmsg = MagicMock(); fmsg.content = "2"; fmsg.tool_calls = None
+        cnt = [0]
+        def side(*a, **kw):
+            cnt[0] += 1
+            if cnt[0] == 1: return MagicMock(choices=[MagicMock(message=msg1)])
+            if cnt[0] == 2: return MagicMock(choices=[MagicMock(message=msg2)])
+            return MagicMock(choices=[MagicMock(message=fmsg)])
+        with patch("openai.resources.chat.completions.Completions.create", side_effect=side):
+            traj = agent.run("1+1")
+        # 第一次调用有实际耗时
+        assert traj.tool_calls[0].latency_ms > 0
+        # deduped 调用 latency 为 0
+        assert traj.tool_calls[1].latency_ms == 0.0
+        assert traj.tool_calls[1].result.latency_ms == 0.0
