@@ -4,367 +4,179 @@
 
 [![Regression Test](https://github.com/a3352576302-ctrl/AgentEvalLab/actions/workflows/regression.yml/badge.svg)](https://github.com/a3352576302-ctrl/AgentEvalLab/actions/workflows/regression.yml)
 
-基于 pytest + YAML 用例驱动的 AI Agent 评测框架。通过记录 Agent 的工具调用、参数、返回结果和最终答案，从**最终结果、工具选择、参数传递、调用顺序、异常恢复、安全合规**六个维度评估 Agent 行为。
+AgentEvalLab 是一套面向 AI Agent 的自动化评测框架。通过记录 Agent 的工具调用、参数、返回结果和最终答案，从**最终结果、工具选择、参数传递、调用顺序、异常恢复、安全合规**六个维度评估 Agent 行为——不只判断"答没答对"，而是检查"过程对不对"。
 
-### 📊 Benchmark v1.0 结果
+---
+
+## 📊 Benchmark 评测结果
 
 | 指标 | 数值 |
 |------|------|
-| YAML 用例 | 339（226 LLM-only + 113 RuleBaseline） |
-| pytest | 420 passed + 226 skipped 🟢 |
-| DeepSeek v1.1 | 169/226 (74.8%) · P95 8.38s · $0.13/run |
-| MiniMax v1.1 | 168/226 (74.3%) · P95 9.49s · $0.35/run |
-| DeepSeek 安全 | 34/40 (85%) |
-| v1.1 报告 | [reports/benchmark-v1.1-full-summary.md](reports/benchmark-v1.1-full-summary.md) |
+| Benchmark 规模 | 339 条 YAML（226 LLM-only + 113 RuleBaseline） |
+| pytest 全量 | 420 passed + 226 skipped 🟢 |
+| **DeepSeek 全量** | **169/226 (74.8%)** · P95 7.82s · $0.13/run |
+| **MiniMax 全量** | **168/226 (74.3%)** · P95 8.51s · $0.35/run |
+| DeepSeek 安全防御 | 34/40 (85%) |
+| 详细报告 | [reports/benchmark-v1.1-full-summary.md](reports/benchmark-v1.1-full-summary.md) |
+
+> 评测覆盖工具调用、RAG/知识问答、多工具规划、Prompt 注入、安全拒答、异常降级等场景。同一批 Benchmark、同一套断言、两个模型——跑出完全不同的行为画像。
 
 ---
 
-## 项目定位
+## 🎯 核心能力
 
-| 传统软件测试 | AgentEvalLab |
-|-------------|-------------|
-| 只看输入/输出 | 检查完整工具调用轨迹 |
-| 单一 pass/fail | L1-L6 多层独立断言（L6 为可选 Token 成本） |
-| 测试数据写死在代码 | YAML 驱动，测试与逻辑解耦 |
-| 测确定性逻辑 | 同时测结果正确性 + 过程合规性 |
+### 多层断言体系（L1-L6）
+
+| 层级 | 检查内容 |
+|------|---------|
+| L1 结果断言 | 最终答案是否包含预期信息（支持 AND/OR 语义） |
+| L2 工具断言 | 调用的工具名称和顺序是否匹配 |
+| L3 参数断言 | 传给工具的参数是否正确（含模糊匹配和归一化） |
+| L4 轮次断言 | 工具调用轮次是否在限制内 |
+| L5 安全断言 | 是否泄露敏感信息、被 Prompt 注入、调用禁用工具 |
+| L6 Token 成本 | 总 Token 消耗是否在预算内 |
+
+**关键设计：最终答案正确不等于 Agent 行为正确。** 工具选错、参数传错、调用顺序错——即使答案蒙对了，L2-L4 也会标记失败。
+
+### 评测维度
+
+- **功能正确性**：单工具调用、多工具串联、计算推理
+- **边界鲁棒性**：空输入、超长输入、多语言、特殊字符
+- **异常降级**：工具超时、HTTP 500、脏数据、权限拒绝——6 种故障注入
+- **安全对抗**：Prompt 注入、间接注入、越狱攻击、敏感信息泄露——12 条安全用例
+- **稳定性**：同一条用例重复运行，检查通过率和工具序列一致性
+- **成本效率**：Token 消耗估算和月成本投影
 
 ---
 
-## 快速开始
+## 🏗️ 技术架构
 
-### 环境要求
+```
+YAML 测试用例（339 条）
+         ↓
+  Runner（加载 → 执行 → 多模型调用）
+         ↓                      ↓
+  AgentProtocol             Assertions
+         ↓                      ↓
+  RuleBasedAgent            L1 结果断言
+  LLMAgent (DeepSeek/MiniMax) L2 工具断言
+  HTTPAgent (外部服务)       L3 参数断言
+         ↓                   L4 轮次断言
+  AgentTrajectory            L5 安全断言
+  (完整 tool_calls trace)    L6 Token 成本
+         ↓
+  Reporter → 控制台 / HTML / Dashboard / JUnit XML
+```
+
+**Agent 执行循环：** Think → Act → Observe 闭环，支持 Function Calling、retry + exponential backoff、重复调用去重。
+
+---
+
+## 🚀 快速开始
+
+### 环境
 
 - Python 3.10+
 - pytest + PyYAML
 
-### 安装
+### 安装与运行
 
 ```bash
 pip install -r requirements.txt
+pytest tests/ -v                          # 全量测试
+pytest tests/ -k "FUNC"                   # 按分类筛选
 ```
 
-### 运行全部测试
+### LLM 评测
 
 ```bash
-# 单元测试 + YAML 回归测试
-pytest tests/ -v
+# 1. 配置 API Key
+cp .env.example .env    # 填入 DeepSeek / MiniMax / OpenAI Key
+
+# 2. 运行真模型评测（226 条 LLM-only）
+python scripts/run_report.py --agent llm --provider deepseek --model deepseek-chat \
+  --only-requires-llm --save-run --run-id ds-bench
+
+# 3. 双模型对比
+python scripts/run_report.py --agent llm --provider minimax --model minimax-m2 \
+  --only-requires-llm --save-run --run-id mm-bench --compare-run ds-bench
 ```
 
-### 只跑回归测试
+### 报告与存储
 
 ```bash
-pytest tests/test_agent_regression.py -v
+python scripts/run_report.py --html-only --save-run           # HTML 报告 + run JSON
+python scripts/run_report.py --resume ds-bench --save-run     # 中断后续跑
+python scripts/build_dashboard.py                             # 历史 Dashboard
 ```
 
-### 按分类筛选
+### API 服务
 
 ```bash
-pytest tests/ -k "FUNC"    # 只跑功能用例
-pytest tests/ -k "SEC"     # 只跑安全用例
-pytest tests/ -k "BOUND"   # 只跑边界用例
+python scripts/serve.py                      # 启动 FastAPI
+curl http://127.0.0.1:8000/health            # 健康检查
+curl -X POST http://127.0.0.1:8000/runs \
+  -H "Content-Type: application/json" \
+  -d '{"agent":"rule","case_ids":["FUNC-001"]}'  # 提交评测
 ```
 
-### 生成 HTML 报告
-
-```bash
-python scripts/run_report.py              # 控制台 + HTML
-python scripts/run_report.py --html-only   # 仅 HTML
-python scripts/run_report.py --junit       # JUnit XML
-pytest tests/ --junitxml=reports/junit.xml # 直接用 pytest
-# 报告输出到 reports/
-```
-
-### 运行记录、续跑与模型对比（P0.1）
-
-```bash
-# 保存本次运行的结构化结果
-python scripts/run_report.py --html-only --save-run --run-id demo-run
-
-# 从已有 run 续跑，跳过已完成用例，并合并旧结果 + 新结果
-python scripts/run_report.py --html-only --resume demo-run --save-run
-
-# 在 HTML 报告中对比另一份 run JSON
-python scripts/run_report.py --html-only --compare-run demo-run
-```
-
-运行记录保存到 `reports/runs/{run_id}.json`。该目录默认不提交到 Git，用于本地保存真实模型评测结果。
-
-### 模型注册表、Baseline 与 Dashboard（P1）
-
-```bash
-# 列出所有已注册模型
-python scripts/run_report.py --list-models
-
-# 从注册表加载模型（替代手动 --provider/--model）
-python scripts/run_report.py --agent llm --model-alias deepseek-chat
-
-# 设置 baseline 并检测退化
-python scripts/run_report.py --html-only --save-run --run-id demo --set-baseline v1
-python scripts/run_report.py --html-only --save-run --run-id demo2 --baseline v1
-
-# 生成 Dashboard（历史运行全貌）
-python scripts/build_dashboard.py
-# 或跑完后自动刷新 Dashboard
-python scripts/run_report.py --html-only --save-run --dashboard
-```
-
-### API 服务（P2）
-
-```bash
-# 启动 API 服务
-python scripts/serve.py
-# 打开 http://127.0.0.1:8000/health
-# 提交评测：POST /runs  {"agent":"rule","case_ids":["FUNC-001"]}
-```
-
-### Docker 一键启动
+### Docker
 
 ```bash
 docker build -t agentevallab .
-docker run --rm agentevallab                           # rule 模式 smoke run
+docker run --rm agentevallab                        # Rule 模式 smoke
 docker run --rm -v ./reports:/app/reports agentevallab  # 报告落盘
 ```
 
-### LLM Agent 评测（v1.0）
+---
 
-```bash
-# 1. 配置 API Key（支持 DeepSeek/MiniMax/OpenAI）
-cp .env.example .env
-# 编辑 .env 填入 API Key
+## 📦 平台能力
 
-# 2. 运行真实模型评测（14 条精选 × 3 轮）
-python scripts/run_report.py --agent llm --provider deepseek --model deepseek-chat --repeat 3 \
-  --ids FUNC-001,FUNC-002,FUNC-003,FUNC-004,FUNC-011,FUNC-017,\
-BOUND-001,BOUND-002,BOUND-010,\
-SEC-001,SEC-002,SEC-006,\
-ERROR-001,ERROR-003 \
-  --save-run --run-id ds-20260621
-```
-
-<details>
-<summary>📜 历史小样本 smoke test（P2.4 前，42 条）</summary>
-
-> 以下为 2026-06-19 首次 14 条精选用例 × 3 轮的早期结果，**不代表当前 Benchmark v1.0 全量 226 条结论**。当前结论见顶部摘要或 [reports/benchmark-v1-full-summary.md](reports/benchmark-v1-full-summary.md)。
-
-> **DeepSeek (2026-06-19):** 24/42 (57.1%), P95=7.19s  
-> **MiniMax M2 (2026-06-19):** 27/42 (64.3%), P95=5.95s
-
-```bash
-# 历史 14 条小样本命令（已不再推荐作为主评测）
-python scripts/run_report.py --agent llm --provider minimax --model minimax-m2 --repeat 3 \
-  --ids FUNC-001,FUNC-002,FUNC-003,FUNC-004,FUNC-011,FUNC-017,\
-BOUND-001,BOUND-002,BOUND-010,\
-SEC-001,SEC-002,SEC-006,\
-ERROR-001,ERROR-003 \
-  --save-run --run-id mm-20260621 --compare-run ds-20260621
-```
-
-</details>
-
-### CI 自动回归
-
-每次推送或 PR 时，GitHub Actions 自动运行 pytest 测试并上传报告。当前本地验证为 382 passed + 226 skipped。
+| 能力 | 说明 |
+|------|------|
+| **失败归因** | 17 种分类标签：工具未调用/选错/顺序错/参数错/安全拦截失败/Provider 错误/断言过严 |
+| **HTML 报告** | 含归因 Top-N、完整 tool trace、语义复核标签、模型对比表 |
+| **Dashboard** | 静态 HTML：历史运行列表、总览卡片、模型对比、安全统计 |
+| **Baseline 回归** | 保存运行基线，自动对比通过率/延迟/Token/安全变化，检测退化 |
+| **中断续跑** | 评测中断后从已完成用例继续，合并新旧结果 |
+| **模型注册表** | 集中管理模型配置（provider/base_url/价格/能力标签） |
+| **语义复核** | 规则版——区分"真失败"和"工具路径不同但任务完成" |
+| **Benchmark 生成器** | 模板化批量生成用例，ID 稳定，可重复生成 |
+| **成本统计** | Token → 金额转换，月成本投影 |
+| **工具调用统计** | 成功率、失败率、重复调用率、max_rounds 超限 |
 
 ---
 
-## 项目结构
+## 🛠 技术栈
+
+Python · pytest · PyYAML · FastAPI · SQLite · Docker · GitHub Actions · JUnit XML · HTML/CSS（内联） · OpenAI-compatible API
+
+---
+
+## 📂 项目结构
 
 ```
 AgentEvalLab/
-├── agentevallab/              # Python 包
-│   ├── tools.py               # 3 个模拟工具（计算器/天气/知识库）
-│   ├── trajectory.py          # 轨迹数据结构（ToolCall/AgentTrajectory）
-│   ├── agent.py               # AgentProtocol + RuleBasedAgent
-│   ├── llm_agent.py           # LLMAgent 适配器（OpenAI 兼容 API）
-│   ├── assertions.py          # L1-L6 多层断言引擎
-│   ├── runner.py              # YAML 加载 + 用例执行 + 稳定性评测
-│   ├── case_schema.py         # P0.1：YAML 元数据校验 + 默认值填充
-│   ├── error_classifier.py    # P0.1：17 种失败归因分类
-│   ├── run_store.py           # P0.1：run JSON 落盘 + 续跑
-│   ├── fault_injector.py      # 6 种故障注入（装饰器实现）
-│   └── reporter.py            # 控制台 + HTML 报告 + 稳定性指标
-├── scripts/
-│   └── run_report.py           # 一键报告生成
-├── reports/
-│   ├── report.html             # 生成的 HTML 报告
-│   └── runs/                   # 本地 run JSON（默认 gitignore）
-├── test_cases/                # Benchmark 数据集（339 条 YAML）
-│   ├── functional/            # 正常功能 21 条
-│   ├── boundary/              # 边界值 10 条
-│   ├── error/                 # 异常场景 8 条
-│   ├── security/              # 安全对抗 12 条
-│   ├── generated/             # 模板生成 268 条
-│   └── scenarios/             # 场景用例 20 条
-├── tests/                     # pytest 测试
-│   ├── conftest.py            # 共享 fixture
-│   ├── test_tools.py          # 工具测试
-│   ├── test_trajectory.py     # 轨迹测试
-│   ├── test_agent.py          # Agent 测试
-│   ├── test_assertions.py     # 断言测试
-│   ├── test_runner.py         # Runner 测试
-│   ├── test_fault_injector.py # 故障注入测试
-│   ├── test_reporter.py       # 报告测试
-│   ├── test_agent_regression.py  # YAML 回归测试（参数化）
-│   ├── test_case_schema.py    # Schema 校验测试
-│   ├── test_error_classifier.py  # 归因分类测试
-│   └── test_run_store.py      # 运行存储测试
-├── config.yaml                # 全局配置
-├── DESIGN.md                  # 设计文档
-├── IMPL_NOTES.md              # 实现笔记
-└── README.md
+├── agentevallab/           # 核心包（Agent/runnner/assertions/reporter 等）
+├── scripts/                # CLI（run_report / build_dashboard / serve / generate_cases）
+├── server/                 # FastAPI（app / schemas）
+├── test_cases/             # Benchmark（339 条 YAML：手写 + 生成 + 场景）
+├── tests/                  # pytest（420 passed + 226 skipped）
+├── reports/                # 报告输出（HTML / run JSON / Dashboard / Baselines）
+├── config/                 # 模型注册表
+├── Dockerfile / docker-compose.yml
+└── docs/                   # 设计文档 / 实现笔记
 ```
 
 ---
 
-## 核心架构
+## ⚠️ 已知限制
 
-```
-YAML 测试用例
-       ↓
-   Runner（加载 → 执行 → 断言）
-       ↓                    ↓
-   AgentProtocol          Assertions
-       ↓                    ↓
-   RuleBasedAgent         L1 结果断言
-   （v1.0: LLMAgent）      L2 工具断言
-       ↓                   L3 参数断言
-   Trajectory              L4 轮次断言
-       ↓                   L5 安全断言
-       ↓                   L6 Token 成本断言（可选）
-   Reporter（控制台摘要）
-```
-
-Agent 执行模型：
-
-```
-用户输入 "北京今天多少度？35度穿什么合适？"
-       ↓
-   Think: 检测到天气意图 + 穿搭意图
-       ↓
-   Act: weather("北京")
-       ↓
-   Observe: {"temp": 35, "weather": "晴"}
-       ↓
-   Think: 需要查穿搭建议
-       ↓
-   Act: knowledge("35度穿什么")
-       ↓
-   Observe: "建议穿轻薄、透气的棉麻衣物..."
-       ↓
-   最终回答: "北京当前天气：晴，35°C...\n\n35°C 高温天气建议..."
-```
-
----
-
-## 多层断言体系
-
-| 层级 | 名称 | 检查内容 | 开关 |
-|------|------|---------|------|
-| L1 | 结果断言 | 最终答案包含预期关键词（支持 AND/OR） | `check_final_answer` |
-| L2 | 工具断言 | 调用的工具名称序列匹配 | `check_tool_sequence` |
-| L3 | 参数断言 | 传给工具的参数正确（含模糊匹配） | `check_tool_params` |
-| L4 | 轮次断言 | 调用轮次在限制内 | `check_max_rounds` |
-| L5 | 安全断言 | 禁止内容/工具/敏感模式检测 | `check_final_answer_not_contains` 等 |
-| L6 | Token 成本 | 总 Token 是否超出预算 | `check_token_cost` |
-
-**关键设计：最终答案正确不等于 Agent 行为正确。** 如果工具选错、参数传错、调用顺序错误，L2-L4 会标记失败，避免 Agent"蒙对答案"。L5 对拒答场景智能放行，避免误判安全回复。
-
----
-
-## YAML 用例示例
-
-```yaml
-id: "FUNC-004"
-name: "多工具串联-天气加穿搭"
-category: functional
-description: "验证 Agent 能正确处理 weather + knowledge 多工具串联场景"
-input: "北京今天多少度？35度穿什么衣服合适？"
-expected:
-  tool_sequence: ["weather", "knowledge"]
-  tool_calls:
-    - tool: "weather"
-      params: { city: "北京" }
-    - tool: "knowledge"
-      params: { query: "35度穿什么" }
-  final_answer_contains: ["北京"]
-  max_rounds: 3
-assertions:
-  check_final_answer: true
-  check_tool_sequence: true
-  check_tool_params: true
-tags: ["multi-tool", "highlight"]
-```
-
----
-
-## 故障注入
-
-6 种故障类型，使用 Python 装饰器实现，与业务逻辑零耦合：
-
-```python
-@injectable("weather")
-def tool_weather(city: str) -> ToolResult:
-    ...
-
-# 测试时注入故障
-with fault_context("weather", "timeout", delay=3.0):
-    result = tool_weather("北京")  # 返回超时错误
-```
-
-| 故障 | 效果 |
-|------|------|
-| timeout | 模拟工具调用超时 |
-| http_500 | 模拟服务器 500 错误 |
-| invalid_json | 模拟返回格式异常 |
-| empty_result | 模拟返回空结果 |
-| permission_denied | 模拟权限拒绝 |
-| network_unreachable | 模拟网络不可达 |
-
----
-
-## 技术栈
-
-- Python 3.10+
-- pytest（参数化、fixture）
-- PyYAML（测试用例）
-- dataclass（数据结构）
-- AST 安全求值（calculator 工具）
-- 装饰器模式（故障注入）
-- 上下文管理器（fault_context）
-
----
-
-## 已知限制
-
-1. **Benchmark v1.0 全量评测已完成**（2026-06-22, P2.6）：MiniMax 整体更高 170/226 (75.2%)，DeepSeek 安全略优 30/40 vs 28/40。详见 [reports/benchmark-v1-full-summary.md](reports/benchmark-v1-full-summary.md)。
-2. **工具数量有限**（3 个），适用于演示框架设计，生产环境可扩展。
-3. **知识库为静态字典**，无检索/向量化环节；DeepSeek 在 knowledge 场景下重复调用问题严重（rag_document_qa 通过率 30% vs MiniMax 95%），匹配策略是后续优化重点。
-4. **multi_tool_planning 仍是共同弱项**：DS 16/35 (45.7%)，MM 19/35 (54.3%)。根因是 System Prompt 未明确指引多工具串联场景。
-5. **断言引擎仍基于规则匹配**，大规模场景可升级为语义等价判断（LLM-as-Judge）。
-
----
-
-## 版本路线
-
-| 版本 | 内容 |
-|------|------|
-| v0.1 | 核心闭环：YAML → Agent → 轨迹 → L1-L4 断言 → pytest ✅ |
-| v0.2 | 故障注入 + 用例扩展到 40-50 条 ✅ |
-| v0.3 | HTML 报告 + P50/P95/P99 延迟统计 ✅ |
-| v0.4 | GitHub Actions CI + JUnit XML ✅ |
-| v0.5 | 安全断言(L5) + LLMAgent 适配器 + CLI 参数 + 稳定性评测 ✅ |
-| v0.5.6 | Bug 修复：FC 消息顺序、安全误判、端到端延迟 | ✅ |
-| v0.5.7 | 数字自动变体 + Token 成本层(L6) | ✅ |
-| v1.0 | DeepSeek 真实模型评测就绪 | ✅ |
-| v1.1 | 双模型横向对比 + Provider 修复 + 三类失败归因 | ✅ |
-| P0.1 | 用例schema + 17种归因 + API重试/续跑/对比 + 安全12条 | ✅ |
-| P1 | 模型注册表 + baseline回归 + Dashboard + Docker | ✅ |
-| P2.6 | 全量评测: DS 65.0% vs MM 75.2% (226 LLM-only) | ✅ ← 当前 |
-| P2.3 | Benchmark v1.0：339条 + 9类生成器 + 382p+226skip 全绿 | ✅ |
-| P2.2.1 | Benchmark质量修复：全绿368+45skip + requires_llm + schema测试 | ✅ |
-| P2.2 | 154条benchmark + generate_cases.py + test_cases/README规范 | ✅ |
-| P2.1 | HTTPAgent接入CLI/API + model_alias打通 + 报告端点 | ✅ |
-| P2 | SQLite + FastAPI + 人工复核 + HTTPAgent | ✅ |
+- **工具数量有限**（3 个）——当前聚焦评测框架设计，生产可扩展
+- **知识库为静态字典**（非向量检索）——保证可复现评测
+- **断言引擎基于规则匹配**——大规模场景可升级语义等价判断
+- **多工具串联仍是共同弱项**——System Prompt 层优化已达当前边界
+- **HTTPAgent 处于接口验证阶段**——需真实外部 Agent 服务完成闭环评测
 
 ---
 
