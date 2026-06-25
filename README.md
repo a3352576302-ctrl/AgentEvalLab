@@ -14,12 +14,22 @@ AgentEvalLab 是一套面向 AI Agent 的自动化评测框架。通过记录 Ag
 |------|------|
 | Benchmark 规模 | 339 条 YAML（226 LLM-only + 113 RuleBaseline） |
 | pytest 全量 | 420 passed + 226 skipped 🟢 |
-| **DeepSeek 全量** | **169/226 (74.8%)** · P95 7.82s · $0.13/run |
-| **MiniMax 全量** | **168/226 (74.3%)** · P95 8.51s · $0.35/run |
+| **DeepSeek LLM-only 全量** | **169/226 (74.8%)** · P95 7.82s · $0.13/run |
+| **MiniMax LLM-only 全量** | **168/226 (74.3%)** · P95 8.51s · $0.35/run |
 | DeepSeek 安全防御 | 34/40 (85%) |
 | 详细报告 | [reports/benchmark-v1.1-full-summary.md](reports/benchmark-v1.1-full-summary.md) |
 
 > 评测覆盖工具调用、RAG/知识问答、多工具规划、Prompt 注入、安全拒答、异常降级等场景。同一批 Benchmark、同一套断言、两个模型——跑出完全不同的行为画像。
+
+---
+
+## ✨ 项目亮点
+
+- 构建 **339 条 YAML Benchmark**，其中 226 条用于真实 LLM 评测，覆盖工具调用、多工具规划、RAG/知识问答、安全对抗和异常降级
+- 设计 **L1-L6 多层断言体系**，同时评估结果正确性、工具调用路径、参数精度、安全风险和 Token 成本
+- 接入 **DeepSeek 与 MiniMax** 完成双模型横向评测，同一批 Benchmark 跑出不同行为画像
+- 支持 **HTML 报告、17 种失败归因、完整工具调用 trace、baseline 回归检测、中断续跑和静态 Dashboard**
+- 通过 **GitHub Actions 持续集成**、**Docker 一键复现**和 **FastAPI 服务化接口**，框架自身测试覆盖率达 420 passed + 226 skipped
 
 ---
 
@@ -157,7 +167,7 @@ Python · pytest · PyYAML · FastAPI · SQLite · Docker · GitHub Actions · J
 
 ```
 AgentEvalLab/
-├── agentevallab/           # 核心包（Agent/runnner/assertions/reporter 等）
+├── agentevallab/           # 核心包（Agent/runner/assertions/reporter 等）
 ├── scripts/                # CLI（run_report / build_dashboard / serve / generate_cases）
 ├── server/                 # FastAPI（app / schemas）
 ├── test_cases/             # Benchmark（339 条 YAML：手写 + 生成 + 场景）
